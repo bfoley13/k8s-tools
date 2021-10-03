@@ -1,0 +1,6 @@
+# go modules
+/vendor
+
+# IDEs and editors
+/.idea
+/.vscode
