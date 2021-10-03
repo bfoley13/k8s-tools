@@ -18,3 +18,7 @@ run: `./k8s_tools`
 
 ## Dockerfile
 The Dockerfile handles building the node frontend and adding the resulting build into the goland serivce through the `embed` package, and finally copying the built go binaries into a clean alpine image.
+
+build: `docker build ./ -t k8s_tools`
+
+run: `docker run -p 8080:8080 k8s_tools`
