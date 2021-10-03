@@ -1,2 +1,18 @@
 # k8s-tools
 Go + React app to connect to managed k8s repos to help build and expand usage and addons
+
+## Running Locally
+### React Frontend
+You can run the react app locally by running `npm start` within the `frontend` directory.
+### Golang Backend
+The golang app has dependencies on Helm 2 and 3, and git being installed on the local machine. Helm 2 and 3 must be in the path as `helm2` and `helm3` respectively.
+
+You can run the golang app locally by building and running the service from the base directory as follows:
+
+
+build: `go build -v -o ./k8s_tools ./server/`
+
+run: `./k8s_tools`
+
+## Dockerfile
+The Dockerfile handles building the node frontend and adding the resulting build into the goland serivce through the `embed` package, and finally copying the built go binaries into a clean alpine image.
