@@ -6,4 +6,4 @@
 /.vscode
 
 # GH Config
-/server/config.json
+server/config.json
