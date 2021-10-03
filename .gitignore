@@ -4,3 +4,6 @@
 # IDEs and editors
 /.idea
 /.vscode
+
+# GH Config
+/server/config.json
