@@ -2,6 +2,8 @@
 Go + React app to connect to managed k8s repos to help build and expand usage and addons
 
 ## Running Locally
+Create a `config.json` within the `server` directory and add your GitHub access token to provide GitHub API access. 
+
 ### React Frontend
 You can run the react app locally by running `npm start` within the `frontend` directory.
 ### Golang Backend
