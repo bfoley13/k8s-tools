@@ -11,46 +11,9 @@ import MuiAccordionDetails from '@mui/material/AccordionDetails';
 import { Repository, ServiceEntry, TreeEntry } from '../../../../models/github';
 import { CreateIngressPR, ListDirectories, ListRepositories, ListServices } from '../../../../api/github';
 import { Code, GitHub } from '@mui/icons-material';
+import {baseYaml, rule, path} from './yaml'
 
 const ingressSteps = ["Select Backing Service", "Define Rules", "Select Addition Location", "Confirm"]
-const baseYaml = `apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: <INGRESS_NAME>
-spec:
-  rules:
-  - host: <HOST_URL>
-    http:
-      paths:
-      - path: <URL_PATH>
-        pathType: <PATH_TYPE>
-        backend:
-          service:
-            name: <SERVICE_NAME>
-            port:
-              number: <SERVICE_PORT>
-`;
-const rule = `  - host:  <HOST_URL>
-    http:
-      paths:
-      - path: <URL_PATH>
-        pathType: <PATH_TYPE>
-        backend:
-          service:
-            name: <SERVICE_NAME>
-            port:
-              number: <SERVICE_PORT>
-`;
-const path = `      - path: <URL_PATH>
-        pathType: <PATH_TYPE>
-        backend:
-          service:
-            name: <SERVICE_NAME>
-            port:
-              number: <SERVICE_PORT>
-`;
-
-
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -90,7 +53,11 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 
 
 
-export default function IngressWorkflow(props: { appState: AppState, setAppState : (appState: AppState) => void }) {
+export default function IngressWorkflow(
+  props: {
+    appState: AppState,
+    setAppState : (appState: AppState) => void
+  }) {
   const {appState, setAppState} = props;
   const [services, setServices] = useState<ServiceEntry[]>([]);
   const [selectedServices, setSelectedServices] = useState<ServiceEntry[]>([]);
@@ -106,7 +73,7 @@ export default function IngressWorkflow(props: { appState: AppState, setAppState
 
   function createPR() {
     CreateIngressPR({
-      repoOwner: "bfoley13",
+      repoOwner: appState.ghUserName,
       repoName: appState.repo.name,
       repoBranch: appState.branch.name,
       ingressDefinition: ingressDefinition,
@@ -118,7 +85,7 @@ export default function IngressWorkflow(props: { appState: AppState, setAppState
 
   React.useEffect(() => {
     ListServices({
-      repoOwner: "bfoley13",
+      repoOwner: appState.ghUserName,
       repoName: appState.repo.name,
       repoBranch: appState.branch.name,
       chartPath: appState.chart.path
@@ -127,7 +94,7 @@ export default function IngressWorkflow(props: { appState: AppState, setAppState
 
   React.useEffect(() => {
     ListDirectories({
-      repoOwner: "bfoley13",
+      repoOwner: appState.ghUserName,
       repoName: appState.repo.name,
       branchSha: appState.branch.sha,
       chartPath: appState.chart.path

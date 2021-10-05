@@ -38,10 +38,15 @@ const AppBar = styled(MuiAppBar, {
 
 export default function Base(props: {}) {
   const {} = props;
-  const [appState, setAppState] = React.useState<AppState>(emptyAppState());
+  const [appState, setAppState] = React.useState<AppState>(
+    {
+      ...emptyAppState(),
+      ghUserName: 'davidgamero'
+    });
   const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
   const menuOpen = Boolean(menuAnchor);
   const [open, setOpen] = React.useState<boolean>(false);
+
   const toggleDrawer = () => {
     setOpen(!open);
   };

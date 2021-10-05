@@ -3,7 +3,7 @@ RUN apk --no-cache --virtual build-dependencies add \
         python \
         make \
         g++
-
+RUN export NODE_OPTIONS="--max-old-space-size=1024"
 WORKDIR /app
 COPY frontend/ .
 RUN npm install

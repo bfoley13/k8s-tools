@@ -16,6 +16,8 @@ build: `go build -v -o ./k8s_tools ./server/`
 
 run: `./k8s_tools`
 
+note: if you get `pattern build/*: no matching files found` make sure to run `npm run build` and copy /frontend/build to /server/build to populate the file embed
+
 ## Dockerfile
 The Dockerfile handles building the node frontend and adding the resulting build into the goland serivce through the `embed` package, and finally copying the built go binaries into a clean alpine image.
 

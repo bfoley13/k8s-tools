@@ -23,6 +23,7 @@ export interface AppState {
   repo: Repository;
   branch: Branch;
   chart: ChartEntry;
+  ghUserName: string;
 }
 
 export function emptyAppState() : AppState {
@@ -42,6 +43,7 @@ export function emptyAppState() : AppState {
     chart: {
       sha: "",
       path: "",
-    }
+    },
+    ghUserName: ""
   }
 }

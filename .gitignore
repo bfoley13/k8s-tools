@@ -7,3 +7,10 @@
 
 # GH Config
 /server/config.json
+/server/build
+
+# MacOS indexing
+.DS_Store
+
+# built binary
+k8s_tools
