@@ -50,7 +50,12 @@ const serviceMeshProviders = [
 ];
 
 
-export default function ExtensionsCard(props: {appState: AppState, setAppState: (appState: AppState) => void}) {
+export default function ExtensionsCard(
+  props: {
+    appState: AppState,
+    setAppState: (appState: AppState) => void,
+    ghUserName: string
+  }) {
   const {appState, setAppState} = props;
 
   const selectIngress = () => {
@@ -76,7 +81,7 @@ export default function ExtensionsCard(props: {appState: AppState, setAppState: 
           {
             ingressProviders.map((info, idx) => {
               return (
-                <Grid item>
+                <Grid item key={idx}>
                   <Card sx={{ height: 200, width: 150 }} onClick={selectIngress}>
                     <CardActionArea sx={{ height: '100%' }}>
                       <CardContent>
@@ -129,7 +134,7 @@ export default function ExtensionsCard(props: {appState: AppState, setAppState: 
           {
             serviceMeshProviders.map((info, idx) => {
               return (
-                <Grid item>
+                <Grid item key={idx}>
                   <Card sx={{ height: 200, width: 150 }} onClick={selectIngress}>
                     <CardActionArea sx={{ height: '100%' }}>
                       <CardContent>

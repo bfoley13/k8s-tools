@@ -6,7 +6,12 @@ import { ListBranches, ListCharts, ListRepositories } from '../../api/github';
 import { Branch, ChartEntry, Repository } from '../../models/github';
 import { AppState, BaseDisplayState } from '../../models/types';
 
-export default function AppSelect(props: {appState: AppState, setAppState: (appState: AppState) => void}) {
+export default function AppSelect(
+  props: {
+    appState: AppState, 
+    setAppState: (appState: AppState) => void,
+    ghUserName: string
+  }) {
   const {appState, setAppState} = props;
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [selectedRepository, setSelectedRepository] = useState<Repository | undefined>();
@@ -14,17 +19,17 @@ export default function AppSelect(props: {appState: AppState, setAppState: (appS
   const [selectedBranch, setSelectedBranch] = useState<Branch | undefined>();
   const [chartPaths, setChartPaths] = useState<ChartEntry[]>([]);
   const [selectedChart, setSelectedChart] = useState<ChartEntry | undefined>();
-
+ 
   React.useEffect(() => {
     ListRepositories({
-      repoOwner: "bfoley13"
+      repoOwner: appState.ghUserName
     }, setRepositories)
   }, []);
 
   React.useEffect(() => {
     if (selectedRepository != undefined) {
       ListBranches({
-        repoOwner: "bfoley13",
+        repoOwner: props.ghUserName,
         repoName: selectedRepository.name
       }, setBranches)
     }
@@ -33,7 +38,7 @@ export default function AppSelect(props: {appState: AppState, setAppState: (appS
   React.useEffect(() => {
     if (selectedRepository != undefined && selectedBranch != undefined) {
       ListCharts({
-        repoOwner: "bfoley13",
+        repoOwner: props.ghUserName,
         repoName: selectedRepository.name,
         repoBranch: selectedBranch.sha
       }, setChartPaths)

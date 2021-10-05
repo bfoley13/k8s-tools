@@ -53,7 +53,12 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 
 
 
-export default function IngressWorkflow(props: { appState: AppState, setAppState : (appState: AppState) => void }) {
+export default function IngressWorkflow(
+  props: {
+    appState: AppState,
+    setAppState : (appState: AppState) => void,
+    ghUserName: string
+  }) {
   const {appState, setAppState} = props;
   const [services, setServices] = useState<ServiceEntry[]>([]);
   const [selectedServices, setSelectedServices] = useState<ServiceEntry[]>([]);
@@ -69,7 +74,7 @@ export default function IngressWorkflow(props: { appState: AppState, setAppState
 
   function createPR() {
     CreateIngressPR({
-      repoOwner: "bfoley13",
+      repoOwner: props.ghUserName,
       repoName: appState.repo.name,
       repoBranch: appState.branch.name,
       ingressDefinition: ingressDefinition,
@@ -81,7 +86,7 @@ export default function IngressWorkflow(props: { appState: AppState, setAppState
 
   React.useEffect(() => {
     ListServices({
-      repoOwner: "bfoley13",
+      repoOwner: props.ghUserName,
       repoName: appState.repo.name,
       repoBranch: appState.branch.name,
       chartPath: appState.chart.path
@@ -90,7 +95,7 @@ export default function IngressWorkflow(props: { appState: AppState, setAppState
 
   React.useEffect(() => {
     ListDirectories({
-      repoOwner: "bfoley13",
+      repoOwner: props.ghUserName,
       repoName: appState.repo.name,
       branchSha: appState.branch.sha,
       chartPath: appState.chart.path

@@ -42,6 +42,8 @@ export default function Base(props: {}) {
   const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
   const menuOpen = Boolean(menuAnchor);
   const [open, setOpen] = React.useState<boolean>(false);
+  const [ghUserName, setghUserName] = React.useState<string>('davidgamero');
+
   const toggleDrawer = () => {
     setOpen(!open);
   };
@@ -169,18 +171,21 @@ export default function Base(props: {}) {
                 <AppSelect
                   appState={appState}
                   setAppState={setAppState}
+                  ghUserName={ghUserName}
                 />
               }
               {appState.baseDisplayState == BaseDisplayState.EXTENSION_DISPLAY &&
                 <ExtensionsCard
                   appState={appState}
                   setAppState={setAppState}
+                  ghUserName={ghUserName}
                 />
               }
               {appState.baseDisplayState == BaseDisplayState.INGRESS_DISPLAY &&
                 <IngressWorkflow
                   appState={appState}
                   setAppState={setAppState}
+                  ghUserName={ghUserName}
                 />
               }
           </Container>
