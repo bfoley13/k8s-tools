@@ -38,11 +38,14 @@ const AppBar = styled(MuiAppBar, {
 
 export default function Base(props: {}) {
   const {} = props;
-  const [appState, setAppState] = React.useState<AppState>(emptyAppState());
+  const [appState, setAppState] = React.useState<AppState>(
+    {
+      ...emptyAppState(),
+      ghUserName: 'davidgamero'
+    });
   const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
   const menuOpen = Boolean(menuAnchor);
   const [open, setOpen] = React.useState<boolean>(false);
-  const [ghUserName, setghUserName] = React.useState<string>('davidgamero');
 
   const toggleDrawer = () => {
     setOpen(!open);
@@ -171,21 +174,18 @@ export default function Base(props: {}) {
                 <AppSelect
                   appState={appState}
                   setAppState={setAppState}
-                  ghUserName={ghUserName}
                 />
               }
               {appState.baseDisplayState == BaseDisplayState.EXTENSION_DISPLAY &&
                 <ExtensionsCard
                   appState={appState}
                   setAppState={setAppState}
-                  ghUserName={ghUserName}
                 />
               }
               {appState.baseDisplayState == BaseDisplayState.INGRESS_DISPLAY &&
                 <IngressWorkflow
                   appState={appState}
                   setAppState={setAppState}
-                  ghUserName={ghUserName}
                 />
               }
           </Container>

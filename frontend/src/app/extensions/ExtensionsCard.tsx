@@ -53,8 +53,7 @@ const serviceMeshProviders = [
 export default function ExtensionsCard(
   props: {
     appState: AppState,
-    setAppState: (appState: AppState) => void,
-    ghUserName: string
+    setAppState: (appState: AppState) => void
   }) {
   const {appState, setAppState} = props;
 

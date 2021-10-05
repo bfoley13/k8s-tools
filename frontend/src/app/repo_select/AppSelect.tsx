@@ -10,7 +10,6 @@ export default function AppSelect(
   props: {
     appState: AppState, 
     setAppState: (appState: AppState) => void,
-    ghUserName: string
   }) {
   const {appState, setAppState} = props;
   const [repositories, setRepositories] = useState<Repository[]>([]);
@@ -29,7 +28,7 @@ export default function AppSelect(
   React.useEffect(() => {
     if (selectedRepository != undefined) {
       ListBranches({
-        repoOwner: props.ghUserName,
+        repoOwner: appState.ghUserName,
         repoName: selectedRepository.name
       }, setBranches)
     }
@@ -38,7 +37,7 @@ export default function AppSelect(
   React.useEffect(() => {
     if (selectedRepository != undefined && selectedBranch != undefined) {
       ListCharts({
-        repoOwner: props.ghUserName,
+        repoOwner: appState.ghUserName,
         repoName: selectedRepository.name,
         repoBranch: selectedBranch.sha
       }, setChartPaths)
