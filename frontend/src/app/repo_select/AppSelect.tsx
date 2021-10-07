@@ -1,5 +1,5 @@
 import { AccountTree, Description, GitHub } from '@mui/icons-material';
-import { Button, Container, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper, Typography } from '@mui/material';
+import { Button, Container, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper, TextField, Typography } from '@mui/material';
 import * as React from 'react';
 import { useState } from 'react';
 import { ListBranches, ListCharts, ListRepositories } from '../../api/github';
@@ -17,13 +17,14 @@ export default function AppSelect(
   const [branches, setBranches] = useState<Branch[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<Branch | undefined>();
   const [chartPaths, setChartPaths] = useState<ChartEntry[]>([]);
+  const [githubUsername, setGithubUsername] = useState<string>("");
   const [selectedChart, setSelectedChart] = useState<ChartEntry | undefined>();
  
   React.useEffect(() => {
     ListRepositories({
       repoOwner: appState.ghUserName
     }, setRepositories)
-  }, []);
+  }, [appState]);
 
   React.useEffect(() => {
     if (selectedRepository != undefined) {
@@ -71,6 +72,17 @@ export default function AppSelect(
     <Container maxWidth="lg" sx={{display: 'flex', flexDirection:'column', height: '100%'}}>
       <Paper sx={{display: 'flex', flexDirection:'column'}}>
         <div style={{display: 'flex', flexDirection:'row', flex: 1, alignContent: 'center'}}>
+          <Typography variant="h5" align="center" color="text.secondary" paragraph sx={{flex: 1}}>
+            Select GitHub User:
+          </Typography>
+        </div>
+        <Divider />
+        <div style={{display: 'flex', flexDirection:'row', flex: 1, alignContent: 'center', margin: '20px', padding: '10px'}}>
+          <TextField sx={{margin: '4px', flex: 1}} id="standard-basic" label="GitHub Username" variant="standard" value={githubUsername} onChange={(e) => setGithubUsername(e.target.value)} />
+          <Button variant="contained" onClick={() => setAppState({...appState, ghUserName: githubUsername})}>Save</Button>
+        </div>
+        <Divider />
+        <div style={{display: 'flex', flexDirection:'row', flex: 1, alignContent: 'center', marginTop: '10px'}}>
           <Typography variant="h5" align="center" color="text.secondary" paragraph sx={{flex: 1}}>
             Select Your App:
           </Typography>
