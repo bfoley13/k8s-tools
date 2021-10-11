@@ -7,7 +7,6 @@ Create a [GitHub access token](https://github.com/settings/tokens) with `repo` a
 ### React Frontend
 You can run the react app locally by running `npm install`, then `npm start` within the `frontend` directory.
 
-To 
 ### Golang Backend
 The golang app has dependencies on Helm 2 and 3, and git being installed on the local machine. Helm 2 and 3 must be in the path as `helm2` and `helm3` respectively.
 
