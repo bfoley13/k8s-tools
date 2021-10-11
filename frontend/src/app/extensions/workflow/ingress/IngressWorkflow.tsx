@@ -29,7 +29,9 @@ const Accordion = styled((props: AccordionProps) => (
 
 const AccordionSummary = styled((props: AccordionSummaryProps) => (
   <MuiAccordionSummary
-    expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: '0.9rem' }} />}
+    expandIcon={<ArrowForwardIosSharpIcon sx={{
+      fontSize: '0.9rem' 
+    }} />}
     {...props}
   />
 ))(({ theme }) => ({
@@ -127,8 +129,10 @@ export default function IngressWorkflow(
       }}>
         <Stepper activeStep={workflowStep} alternativeLabel>
           {ingressSteps.map((label, index) => {
-            const stepProps = {};
-            const labelProps = {};
+            const stepProps = {
+            };
+            const labelProps = {
+            };
             return (
               <Step key={label} {...stepProps}>
                 <StepLabel {...labelProps}>{label}</StepLabel>
@@ -149,45 +153,47 @@ export default function IngressWorkflow(
             Services:
           </Typography>
           <Paper>
-          <List
-            sx={{
-              overflow: 'auto',
-              maxHeight: 500,
-            }}
-          >
-            {
-              services.map((service, idx) => {
-                return (
-                  <div>
-                  <ListItem key={"service-" + idx} onClick={() => selectServices([service])}>
-                    <ListItemButton>
-                      <ListItemIcon>
-                        <Code />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={service.name}
-                        secondary={
-                          <React.Fragment>
-                            <Typography
-                              sx={{ display: 'inline' }}
-                              component="span"
-                              variant="body2"
-                              color="text.primary"
-                            >
-                            </Typography>
-                          </React.Fragment>
-                        }
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                  {idx != services.length - 1 &&
+            <List
+              sx={{
+                overflow: 'auto',
+                maxHeight: 500,
+              }}
+            >
+              {
+                services.map((service, idx) => {
+                  return (
+                    <div key={idx}>
+                      <ListItem key={"service-" + idx} onClick={() => selectServices([service])}>
+                        <ListItemButton>
+                          <ListItemIcon>
+                            <Code />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={service.name}
+                            secondary={
+                              <React.Fragment>
+                                <Typography
+                                  sx={{
+                                    display: 'inline' 
+                                  }}
+                                  component="span"
+                                  variant="body2"
+                                  color="text.primary"
+                                >
+                                </Typography>
+                              </React.Fragment>
+                            }
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                      {idx != services.length - 1 &&
                     <Divider variant="inset" component="li" />
-                  }
-                  </div>
-                )
-              })
-            }
-          </List>
+                      }
+                    </div>
+                  )
+                })
+              }
+            </List>
           </Paper>
         </Container>
       }
@@ -201,36 +207,49 @@ export default function IngressWorkflow(
           {
             selectedServices.map((selectedService, idx) => {
               return (
-                <Accordion expanded={accordionIndex === 0} onChange={() => setAccordionIndex(idx)}>
+                <Accordion
+                  key={idx}
+                  expanded={accordionIndex === 0}
+                  onChange={() => setAccordionIndex(idx)}>
                   <AccordionSummary aria-controls="panel1d-content" id="panel1d-header">
                     <Typography>{selectedService.name}</Typography>
                   </AccordionSummary>
                   <AccordionDetails>
                     <div>
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'column' }}>
-                        <div style={{display: 'flex', flexDirection: 'row'}}>
-                            <MonacoEditor
-                              language="yaml"
-                              value={ingressDefinition}
-                              options={{
-                                theme: 'vs-dark',
-                              }}
-                              style={{
-                                width: '100%',
-                                minHeight: '500px'
-                              }}
-                              onChange={(s, e) => {
-                                console.log(e);
-                                ingressDefinition = s;
-                              }}
-                            />
+                      <Box sx={{
+                        display: 'flex', flexWrap: 'wrap', flexDirection: 'column' 
+                      }}>
+                        <div style={{
+                          display: 'flex', flexDirection: 'row'
+                        }}>
+                          <MonacoEditor
+                            language="yaml"
+                            value={ingressDefinition}
+                            options={{
+                              theme: 'vs-dark',
+                            }}
+                            style={{
+                              width: '100%',
+                              minHeight: '500px'
+                            }}
+                            onChange={(s, e) => {
+                              console.log(e);
+                              ingressDefinition = s;
+                            }}
+                          />
                         </div>
                         <div>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row', marginTop: '10px'}}>
-                            <Button variant="contained" sx={{margin: 'auto'}} onClick={addRuleToDefinition}>
+                          <div style={{
+                            display: 'flex', flexWrap: 'wrap', flexDirection: 'row', marginTop: '10px'
+                          }}>
+                            <Button variant="contained" sx={{
+                              margin: 'auto'
+                            }} onClick={addRuleToDefinition}>
                               Add Rule
                             </Button>
-                            <Button variant="contained" sx={{margin: 'auto'}} onClick={addPathToDefinition}>
+                            <Button variant="contained" sx={{
+                              margin: 'auto'
+                            }} onClick={addPathToDefinition}>
                               Add Path
                             </Button>
                           </div>
@@ -243,10 +262,14 @@ export default function IngressWorkflow(
               );
             })
           }
-          <Button variant="contained" sx={{float: 'left', marginTop: '10px'}} onClick={() => setWorkflowStep(workflowStep - 1)}>
+          <Button variant="contained" sx={{
+            float: 'left', marginTop: '10px'
+          }} onClick={() => setWorkflowStep(workflowStep - 1)}>
             Back
           </Button>
-          <Button variant="contained" sx={{float: 'right', marginTop: '10px'}} onClick={() => saveIngressYaml()}>
+          <Button variant="contained" sx={{
+            float: 'right', marginTop: '10px'
+          }} onClick={() => saveIngressYaml()}>
             Next
           </Button>
         </Container>
@@ -258,12 +281,18 @@ export default function IngressWorkflow(
             marginTop: "25px"
           }}
         >
-          <Paper sx={{padding: '20px', display: 'flex', flexDirection: 'column'}}>
+          <Paper sx={{
+            padding: '20px', display: 'flex', flexDirection: 'column'
+          }}>
             <Typography variant="h5" align="center" color="text.secondary" paragraph>
               Select Ingress Directory and Filename
             </Typography>
-            <div style={{display: 'flex', flex: 'row', width: '100%'}}>
-              <FormControl sx={{flex: 2, paddingRight: '10px'}}>
+            <div style={{
+              display: 'flex', flex: 'row', width: '100%'
+            }}>
+              <FormControl sx={{
+                flex: 2, paddingRight: '10px'
+              }}>
                 <InputLabel id="directory-select-label">Directory</InputLabel>
                 <Select
                   labelId="directory-select-label"
@@ -274,36 +303,50 @@ export default function IngressWorkflow(
                 >
                   {chartDirectories.map((directory, idx) => {
                     return (
-                      <MenuItem value={directory.path}>{directory.path}</MenuItem>
+                      <MenuItem
+                        key={idx}
+                        value={directory.path}>
+                        {directory.path}
+                      </MenuItem>
                     );
                   })
 
                   }
                 </Select>
               </FormControl>
-              <TextField sx={{flex: 1}} value={filename} onChange={(e) => setFilename(e.target.value)} id="outlined-basic" label="File Name" variant="outlined" />
+              <TextField sx={{
+                flex: 1
+              }} value={filename} onChange={(e) => setFilename(e.target.value)} id="outlined-basic" label="File Name" variant="outlined" />
             </div>
           </Paper>
-          <Button variant="contained" sx={{float: 'left', marginTop: '10px'}} onClick={() => setWorkflowStep(workflowStep - 1)}>
+          <Button variant="contained" sx={{
+            float: 'left', marginTop: '10px'
+          }} onClick={() => setWorkflowStep(workflowStep - 1)}>
             Back
           </Button>
-          <Button variant="contained" sx={{float: 'right', marginTop: '10px'}} onClick={() => setWorkflowStep(workflowStep + 1)}>
+          <Button variant="contained" sx={{
+            float: 'right', marginTop: '10px'
+          }} onClick={() => setWorkflowStep(workflowStep + 1)}>
             Next
           </Button>
         </Container>
       }
       {workflowStep == 3 &&
         <Container
-        maxWidth="md"
-        sx={{
-          marginTop: "25px"
-        }}
+          maxWidth="md"
+          sx={{
+            marginTop: "25px"
+          }}
         >
-          <Paper sx={{padding: '20px'}}>
+          <Paper sx={{
+            padding: '20px'
+          }}>
             <Typography variant="h5" align="center" color="text.secondary" paragraph>
               Ingress Configuration Confirmation
             </Typography>
-            <div style={{display: 'flex', flexDirection: 'row'}}>
+            <div style={{
+              display: 'flex', flexDirection: 'row'
+            }}>
               <ul>
                 <li><span>Service: {selectedServices[0].name}</span></li>
                 <li><span>Ingress Filename: {filename}</span></li>
@@ -311,10 +354,14 @@ export default function IngressWorkflow(
               </ul>
             </div>
           </Paper>
-          <Button variant="contained" sx={{float: 'left', marginTop: '10px'}} onClick={() => setWorkflowStep(workflowStep - 1)}>
+          <Button variant="contained" sx={{
+            float: 'left', marginTop: '10px'
+          }} onClick={() => setWorkflowStep(workflowStep - 1)}>
             Back
           </Button>
-          <Button variant="contained" sx={{float: 'right', marginTop: '10px'}} onClick={() => createPR()}>
+          <Button variant="contained" sx={{
+            float: 'right', marginTop: '10px'
+          }} onClick={() => createPR()}>
             Submit
           </Button>
         </Container>
@@ -326,11 +373,19 @@ export default function IngressWorkflow(
             marginTop: "25px"
           }}
         >
-          <Paper sx={{padding: '20px'}}>
+          <Paper sx={{
+            padding: '20px'
+          }}>
             {prURL == "" &&
-              <div style={{display: 'flex', flexDirection: 'column'}}>
-                <div style={{flex: 1, flexDirection: 'row'}}>
-                  <CircularProgress sx={{flex: 1}} />
+              <div style={{
+                display: 'flex', flexDirection: 'column'
+              }}>
+                <div style={{
+                  flex: 1, flexDirection: 'row'
+                }}>
+                  <CircularProgress sx={{
+                    flex: 1
+                  }} />
                 </div>
                 <Typography variant="h5" align="center" color="text.secondary" paragraph>
                   Generating Pull Request
@@ -338,8 +393,12 @@ export default function IngressWorkflow(
               </div>
             }
             {prURL != "" &&
-              <div style={{display: 'flex', flex: 1, flexDirection: 'row', alignContent: 'center'}}>
-                <a href={prURL} style={{flex: 1, alignContent: 'center'}}>PR Link</a>
+              <div style={{
+                display: 'flex', flex: 1, flexDirection: 'row', alignContent: 'center'
+              }}>
+                <a href={prURL} style={{
+                  flex: 1, alignContent: 'center'
+                }}>PR Link</a>
               </div>
             }
           </Paper>
