@@ -16,8 +16,8 @@ type BranchesResponse struct {
 	Data []*Branch `json:"data"`
 }
 
-type ChartResponse struct {
-	Data []*Chart `json:"data"`
+type ManifestOptionResponse struct {
+	Data []*ManifestOption `json:"data"`
 }
 
 type ServiceResponse struct {
@@ -40,7 +40,7 @@ type Branch struct {
 	Name string `json:"name"`
 }
 
-type Chart struct {
+type ManifestOption struct {
 	SHA  string `json:"sha"`
 	Path string `json:"path"`
 }
