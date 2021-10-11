@@ -34,7 +34,6 @@ RUN apk add --no-cache wget\
   && tar -zxvf helm-v${helm3version}-linux-amd64.tar.gz \
   && mv linux-amd64/helm /usr/local/bin/helm3
 
-
 COPY --from=build-go /k8s_tooling /k8s_tooling
 
 CMD ["/k8s_tooling"]
