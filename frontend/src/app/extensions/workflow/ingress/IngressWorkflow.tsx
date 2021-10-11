@@ -88,7 +88,7 @@ export default function IngressWorkflow(
       repoOwner: appState.ghUserName,
       repoName: appState.repo.name,
       repoBranch: appState.branch.name,
-      chartPath: appState.chart.path
+      manifestOptionPath: appState.chart.path
     }, setServices);
   }, [])
 

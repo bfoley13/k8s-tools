@@ -63,7 +63,7 @@ export function ListServices(req: ListServicesRequest, handleResponse : (respons
       repoOwner: req.repoOwner,
       repoName: req.repoName,
       repoBranch: req.repoBranch,
-      chartPath: req.chartPath
+      manifestOptionPath: req.manifestOptionPath
     }
   })
   .then((resp) => {

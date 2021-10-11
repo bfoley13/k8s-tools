@@ -17,7 +17,7 @@ export interface ListServicesRequest {
   repoOwner: string;
   repoName: string;
   repoBranch: string;
-  chartPath: string;
+  manifestOptionPath: string;
 }
 
 export interface ListDirectoriesRequest {
