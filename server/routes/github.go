@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"k8s-tooling-adapter/server/types"
@@ -73,6 +74,73 @@ func (api *K8sService) ListRepoCharts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Println("[ListRepoCharts] completed")
+	w.WriteHeader(http.StatusOK)
+}
+
+func (api *K8sService) ListRepoWorkflows(w http.ResponseWriter, r *http.Request) {
+	log.Println("[ListRepoWorkflows] starting service call")
+	ctx := context.Background()
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	params := r.URL.Query()
+	if _, ok := params["repoOwner"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid repoOwner parameter"))
+		return
+	}
+
+	if _, ok := params["repoName"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid repoName parameter"))
+		return
+	}
+
+	if _, ok := params["repoBranch"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid repoBranch parameter"))
+		return
+	}
+
+	repoOwner := params["repoOwner"][0]
+	repoName := params["repoName"][0]
+	repoBranch := params["repoBranch"][0]
+	log.Printf("[ListRepoCharts] Req Repo: %s/%s/%s\n", repoOwner, repoName, repoBranch)
+
+	tree, err := api.GHClient.GetBranchTree(ctx, repoOwner, repoName, repoBranch)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
+
+	reg, err := regexp.Compile(".github/workflows/.+.ya?ml")
+	if err != nil {
+		log.Printf("ERROR: %s", err.Error())
+	}
+
+	workflows := make([]*types.Workflow, 0)
+	for _, entry := range tree.Entries {
+		if entry == nil || entry.Path == nil {
+			continue
+		}
+
+		if reg.MatchString(*entry.Path) {
+			workflows = append(workflows, &types.Workflow{
+				SHA: *entry.SHA,
+				Path: *entry.Path,
+			})
+		}
+	}
+
+	log.Println("[ListRepoCharts] Found Workflows: ", len(workflows))
+
+	resp := types.WorkflowResponse{
+		Data: workflows,
+	}
+
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
+
+	log.Println("[ListRepoWorkflows] completed")
 	w.WriteHeader(http.StatusOK)
 }
 

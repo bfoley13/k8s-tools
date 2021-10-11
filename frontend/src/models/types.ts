@@ -6,16 +6,16 @@ export enum BaseDisplayState {
   BRANCH_SELECT,
   CHART_SELECT,
   EXTENSION_DISPLAY,
-  INGRESS_DISPLAY
+  INGRESS_DISPLAY,
+  GITHUB_ACTION_DISPLAY,
 }
 
 export enum HomeDisplay {
   HOME,
   REPO_SELECT,
   APP_PIPELINES,
-  APP_EXTENSIONS
+  APP_EXTENSIONS,
 }
-
 
 export interface AppState {
   homeDisplay: HomeDisplay;
@@ -26,7 +26,7 @@ export interface AppState {
   ghUserName: string;
 }
 
-export function emptyAppState() : AppState {
+export function emptyAppState(): AppState {
   return {
     homeDisplay: HomeDisplay.HOME,
     baseDisplayState: BaseDisplayState.HOME,
@@ -34,16 +34,16 @@ export function emptyAppState() : AppState {
       id: 0,
       name: "",
       owner: "",
-      description: ""
+      description: "",
     },
     branch: {
       name: "",
-      sha: ""
+      sha: "",
     },
     chart: {
       sha: "",
       path: "",
     },
-    ghUserName: ""
-  }
+    ghUserName: "",
+  };
 }

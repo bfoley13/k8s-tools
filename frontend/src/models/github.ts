@@ -13,6 +13,12 @@ export interface ListChartEntryRequest {
   repoBranch: string;
 }
 
+export interface ListWorkflowsEntryRequest {
+  repoOwner: string;
+  repoName: string;
+  repoBranch: string;
+}
+
 export interface ListServicesRequest {
   repoOwner: string;
   repoName: string;
@@ -49,6 +55,11 @@ export interface Branch {
 }
 
 export interface ChartEntry {
+  sha: string;
+  path: string;
+}
+
+export interface WorkflowEntry {
   sha: string;
   path: string;
 }

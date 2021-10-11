@@ -14,6 +14,7 @@ func NewRouter(apiServer *routes.K8sService, getFS func() http.FileSystem) *mux.
 	router.HandleFunc("/api/github/repositories", corsHandler(apiServer.ListRepositories, "GET")).Methods("GET", "OPTIONS")
 	router.HandleFunc("/api/github/repository/branches", corsHandler(apiServer.ListRepoBranches, "GET")).Methods("GET", "OPTIONS")
 	router.HandleFunc("/api/github/repository/charts", corsHandler(apiServer.ListRepoCharts, "GET")).Methods("GET", "OPTIONS")
+	router.HandleFunc("/api/github/repository/workflows", corsHandler(apiServer.ListRepoWorkflows, "GET")).Methods("GET", "OPTIONS")
 	router.HandleFunc("/api/github/repository/services", corsHandler(apiServer.ListServices, "GET")).Methods("GET", "OPTIONS")
 	router.HandleFunc("/api/github/repository/chartdirectory", corsHandler(apiServer.GetChartDirectories, "GET")).Methods("GET", "OPTIONS")
 	router.HandleFunc("/api/github/repository/pr", corsHandler(apiServer.CreateIngressPullRequest, "POST")).Methods("POST", "OPTIONS")

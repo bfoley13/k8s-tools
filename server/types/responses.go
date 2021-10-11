@@ -20,6 +20,10 @@ type ChartResponse struct {
 	Data []*Chart `json:"data"`
 }
 
+type WorkflowResponse struct {
+	Data []*Workflow `json:"data"`
+}
+
 type ServiceResponse struct {
 	Data []*Service `json:"data"`
 }
@@ -41,6 +45,11 @@ type Branch struct {
 }
 
 type Chart struct {
+	SHA  string `json:"sha"`
+	Path string `json:"path"`
+}
+
+type Workflow struct {
 	SHA  string `json:"sha"`
 	Path string `json:"path"`
 }
