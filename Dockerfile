@@ -25,6 +25,7 @@ FROM alpine:3.13
 ARG helm2version=2.17.0
 ARG helm3version=3.6.3
 
+RUN apk add git
 RUN apk add --no-cache wget\
   && wget https://get.helm.sh/helm-v${helm2version}-linux-amd64.tar.gz \
   && tar -zxvf helm-v${helm2version}-linux-amd64.tar.gz \
