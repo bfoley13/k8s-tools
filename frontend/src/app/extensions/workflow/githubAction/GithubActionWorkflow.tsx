@@ -25,13 +25,16 @@ import {
   Select,
   MenuItem,
   Paper,
+  Tooltip,
   CircularProgress,
 } from "@mui/material";
-import { Code, GitHub } from "@mui/icons-material";
+import { Code, Help } from "@mui/icons-material";
+import { isConstructorDeclaration } from "typescript";
 
 const githubActionSteps = [
   "Select Workflow",
   "Select Action",
+  "Enter Fields",
   "Add Action",
   "Confirm",
 ];
@@ -45,8 +48,28 @@ export default function GithubActionWorkflow(props: {
   const { appState, setAppState } = props;
   const [action, setAction] = React.useState<Action>();
   const [workflowStep, setWorkflowStep] = React.useState<number>(0);
+  const [actionFields, setActionFields] = React.useState<Map<string, string>>(
+    new Map()
+  );
   const [selectedWorkflow, setSelectedWorkflow] =
     React.useState<WorkflowEntry>();
+
+  const addActionField = (name: string, val: string) => {
+    setActionFields(new Map(actionFields.set(name, val)));
+  };
+
+  const hasRequiredFields = (): boolean => {
+    const required = action?.inputs.filter((input) => input.required);
+    const unfulfilled = required?.filter(
+      (input) =>
+        !actionFields.has(input.name) ||
+        actionFields.get(input.name)?.length == 0
+    );
+    console.log(required);
+    console.log(unfulfilled);
+
+    return !!unfulfilled && unfulfilled?.length == 0;
+  };
 
   React.useEffect(() => {
     ListWorkflows(
@@ -202,9 +225,83 @@ export default function GithubActionWorkflow(props: {
               color="text.secondary"
               paragraph
             >
-              example: https://github.com/Azure/k8s-bake
+              example: https://github.com/actions/first-interaction
             </Typography>
             <Divider />
+          </Paper>
+        </Container>
+      )}
+
+      {workflowStep == 2 && (
+        <Container
+          maxWidth="sm"
+          sx={{
+            marginTop: "25px",
+          }}
+        >
+          <Typography
+            variant="h5"
+            align="center"
+            color="text.secondary"
+            paragraph
+          >
+            Enter Fields
+          </Typography>
+          <Paper sx={{ display: "flex", flexDirection: "column" }}>
+            {action?.inputs.map(({ name, description, required }, index) => {
+              return (
+                <>
+                  <Typography
+                    style={{ marginLeft: "34px", paddingTop: "34px" }}
+                    color="text.primary"
+                    paragraph
+                  >
+                    {name + (required ? "*" : "")}{" "}
+                    <Tooltip
+                      style={{ cursor: "pointer" }}
+                      title={<p style={{ fontSize: "16px" }}>{description}</p>}
+                      arrow
+                    >
+                      <Help fontSize="inherit" />
+                    </Tooltip>
+                  </Typography>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      flex: 1,
+                      alignContent: "center",
+                      margin: "20px",
+                      marginTop: "0px",
+                      padding: "10px",
+                      paddingTop: "0px",
+                    }}
+                  >
+                    <TextField
+                      sx={{ margin: "4px", flex: 1 }}
+                      id="standard-basic"
+                      label={required ? "required" : ""}
+                      variant="standard"
+                      value={actionFields.get(name)}
+                      onChange={(e) => addActionField(name, e.target.value)}
+                    />
+                  </div>
+                </>
+              );
+            })}
+            <Button
+              style={{ margin: "34px" }}
+              variant="contained"
+              onClick={() => {
+                if (hasRequiredFields()) {
+                  console.log(actionFields);
+                  setWorkflowStep(workflowStep + 1);
+                }
+              }}
+            >
+              Add
+            </Button>
           </Paper>
         </Container>
       )}
