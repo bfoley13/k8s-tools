@@ -5,7 +5,7 @@ const baseURL = "http://localhost:8080";
 axios.defaults.baseURL = baseURL
 
 
-export function ListRepositories(req : ListRepositoriesRequest, handleResponse : (response: Repository[]) => void) {
+export function ListRepositories(req: ListRepositoriesRequest, handleResponse: (response: Repository[]) => void) {
   console.log("ListRepositories");
   axios.defaults.baseURL = baseURL
   axios.get(baseURL + "/api/github/repositories", {
@@ -13,14 +13,14 @@ export function ListRepositories(req : ListRepositoriesRequest, handleResponse :
       repoOwner: req.repoOwner
     }
   })
-  .then((resp) => {
-    console.log("Got Response: ")
-    console.log(resp)
-    handleResponse(resp.data.data);
-  })
+    .then((resp) => {
+      console.log("Got Response: ")
+      console.log(resp)
+      handleResponse(resp.data.data);
+    })
 }
 
-export function ListBranches(req: ListBranchesRequest, handleResponse : (response: Branch[]) => void) {
+export function ListBranches(req: ListBranchesRequest, handleResponse: (response: Branch[]) => void) {
   console.log("ListBranches");
   axios.defaults.baseURL = baseURL
   axios.get(baseURL + "/api/github/repository/branches", {
@@ -29,14 +29,14 @@ export function ListBranches(req: ListBranchesRequest, handleResponse : (respons
       repoName: req.repoName
     }
   })
-  .then((resp) => {
-    console.log("Got Response: ")
-    console.log(resp)
-    handleResponse(resp.data.data);
-  })
+    .then((resp) => {
+      console.log("Got Response: ")
+      console.log(resp)
+      handleResponse(resp.data.data);
+    })
 }
 
-export function ListCharts(req: ListChartEntryRequest, handleResponse : (response: ChartEntry[]) => void) {
+export function ListCharts(req: ListChartEntryRequest, handleResponse: (response: ChartEntry[]) => void) {
   console.log("ListCharts");
   console.log(req);
   axios.defaults.baseURL = baseURL
@@ -47,14 +47,14 @@ export function ListCharts(req: ListChartEntryRequest, handleResponse : (respons
       repoBranch: req.repoBranch
     }
   })
-  .then((resp) => {
-    console.log("Got Response: ")
-    console.log(resp)
-    handleResponse(resp.data.data);
-  })
+    .then((resp) => {
+      console.log("Got Response: ")
+      console.log(resp)
+      handleResponse(resp.data.data);
+    })
 }
 
-export function ListServices(req: ListServicesRequest, handleResponse : (response: ServiceEntry[]) => void) {
+export function ListServices(req: ListServicesRequest, handleResponse: (response: ServiceEntry[]) => void) {
   console.log("ListServices");
   console.log(req);
   axios.defaults.baseURL = baseURL
@@ -66,14 +66,14 @@ export function ListServices(req: ListServicesRequest, handleResponse : (respons
       manifestOptionPath: req.manifestOptionPath
     }
   })
-  .then((resp) => {
-    console.log("Got Response: ")
-    console.log(resp)
-    handleResponse(resp.data.data);
-  })
+    .then((resp) => {
+      console.log("Got Response: ")
+      console.log(resp)
+      handleResponse(resp.data.data);
+    })
 }
 
-export function ListDirectories(req: ListDirectoriesRequest, handleResponse : (response: TreeEntry[]) => void) {
+export function ListDirectories(req: ListDirectoriesRequest, handleResponse: (response: TreeEntry[]) => void) {
   console.log("ListServices");
   console.log(req);
   axios.defaults.baseURL = baseURL
@@ -85,21 +85,21 @@ export function ListDirectories(req: ListDirectoriesRequest, handleResponse : (r
       chartPath: req.chartPath
     }
   })
-  .then((resp) => {
-    console.log("Got Response: ")
-    console.log(resp)
-    handleResponse(resp.data.data);
-  })
+    .then((resp) => {
+      console.log("Got Response: ")
+      console.log(resp)
+      handleResponse(resp.data.data);
+    })
 }
 
 export function CreateIngressPR(req: CreateIngressPRRequest, handleResponse: (prURL: string) => void) {
   console.log("CreateIngressPR");
   console.log(req);
   axios.defaults.baseURL = baseURL
-  axios.post( baseURL + '/api/github/repository/pr', req)
-  .then((resp) => {
-    console.log("Got Response: ")
-    console.log(resp)
-    handleResponse(resp.data.pullRequestURL);
-  })
+  axios.post(baseURL + '/api/github/repository/pr', req)
+    .then((resp) => {
+      console.log("Got Response: ")
+      console.log(resp)
+      handleResponse(resp.data.pullRequestURL);
+    })
 }

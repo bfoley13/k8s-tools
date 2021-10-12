@@ -7,9 +7,11 @@ import { Divider, IconButton, List, ListItem, ListItemIcon, ListItemText, Toolba
 import { DeviceHub, Extension, GitHub } from '@mui/icons-material';
 import { AppState, BaseDisplayState, HomeDisplay } from '../models/types';
 
-const drawerWidth: number = 240;
+const drawerWidth = 240;
 
-const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
+const Drawer = styled(MuiDrawer, {
+  shouldForwardProp: (prop) => prop !== 'open'
+})(
   ({ theme, open }) => ({
     '& .MuiDrawer-paper': {
       position: 'relative',
@@ -35,11 +37,13 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
   }),
 );
 
-export default function BaseDrawer(props: {open: boolean, toggleDrawer() : void, setAppState(state : AppState) : void, appState : AppState}) {
-  const {open, toggleDrawer, setAppState, appState} = props;
+export default function BaseDrawer(props: { open: boolean, toggleDrawer(): void, setAppState(state: AppState): void, appState: AppState }) {
+  const { open, toggleDrawer, setAppState, appState } = props;
 
   const handleNavClick = (displayState: HomeDisplay, baseDisplay: BaseDisplayState) => {
-    setAppState({...appState, homeDisplay: displayState, baseDisplayState: baseDisplay});
+    setAppState({
+      ...appState, homeDisplay: displayState, baseDisplayState: baseDisplay
+    });
   };
 
   return (

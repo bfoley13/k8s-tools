@@ -21,6 +21,8 @@ Enable ESLint formatting:
     ```
 - restart VSCode
 
+- Enable format on save in VSCode via settings
+
 ### Golang Backend
 The golang app has dependencies on Helm 2 and 3, and git being installed on the local machine. Helm 2 and 3 must be in the path as `helm2` and `helm3` respectively.
 

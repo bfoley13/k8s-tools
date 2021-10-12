@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
-import {Badge, Box, Button, Container, CssBaseline, IconButton, Menu, MenuItem, Stack, Toolbar, Typography,} from '@mui/material';
+import { Badge, Box, Button, Container, CssBaseline, IconButton, Menu, MenuItem, Stack, Toolbar, Typography, } from '@mui/material';
 import MuiDrawer from '@mui/material/Drawer';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -8,7 +8,7 @@ import { AccountCircle, OpenInBrowser } from '@mui/icons-material';
 import ExtensionsCard from './extensions/ExtensionsCard';
 import IngressWorkflow from './extensions/workflow/ingress/IngressWorkflow';
 import BaseDrawer from './BaseDrawer';
-import {AppState, BaseDisplayState, emptyAppState, HomeDisplay,} from '../models/types';
+import { AppState, BaseDisplayState, emptyAppState, HomeDisplay, } from '../models/types';
 import AppSelect from './repo_select/AppSelect';
 
 const theme = createTheme();
@@ -36,8 +36,7 @@ const AppBar = styled(MuiAppBar, {
   }),
 }));
 
-export default function Base(props: {}) {
-  const {} = props;
+export default function Base() {
   const [appState, setAppState] = React.useState<AppState>(
     {
       ...emptyAppState(),
@@ -58,7 +57,7 @@ export default function Base(props: {}) {
 
   const handleAccountClose = (displayState: BaseDisplayState) => {
     setAppState({
-      ...appState, baseDisplayState: displayState, homeDisplay: HomeDisplay.REPO_SELECT 
+      ...appState, baseDisplayState: displayState, homeDisplay: HomeDisplay.REPO_SELECT
     });
     setMenuAnchor(null);
   };
@@ -66,14 +65,14 @@ export default function Base(props: {}) {
   const selectRepos = () => {
     console.log('repo being selected');
     setAppState({
-      ...appState, baseDisplayState: BaseDisplayState.REPO_SELECT 
+      ...appState, baseDisplayState: BaseDisplayState.REPO_SELECT
     });
   };
 
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{
-        display: 'flex' 
+        display: 'flex'
       }}>
         <CssBaseline />
         <AppBar position="absolute" open={open}>
@@ -90,7 +89,7 @@ export default function Base(props: {}) {
               sx={{
                 marginRight: '36px',
                 ...(open && {
-                  display: 'none' 
+                  display: 'none'
                 }),
               }}
             >
@@ -102,7 +101,7 @@ export default function Base(props: {}) {
               color="inherit"
               noWrap
               sx={{
-                flexGrow: 1 
+                flexGrow: 1
               }}
             >
               k8s-tooling
@@ -131,16 +130,16 @@ export default function Base(props: {}) {
                   appState.repo.name != ''
                   && (
                     <MenuItem onClick={() => handleAccountClose(BaseDisplayState.REPO_SELECT)}>
-                    Repository:
+                      Repository:
                       {' '}
                       {appState.repo.name}
                     </MenuItem>
                   )
                 }
-                { appState.branch.name != ''
+                {appState.branch.name != ''
                   && (
                     <MenuItem onClick={() => handleAccountClose(BaseDisplayState.BRANCH_SELECT)}>
-                    Branch:
+                      Branch:
                       {' '}
                       {appState.branch.name}
                     </MenuItem>
@@ -168,56 +167,56 @@ export default function Base(props: {}) {
         >
           <Toolbar />
           <Container maxWidth="md" sx={{
-            mt: 4, mb: 4, flexGrow: 1 
+            mt: 4, mb: 4, flexGrow: 1
           }}>
             {appState.baseDisplayState == BaseDisplayState.HOME
-                && (
-                  <div>
-                    <Typography
-                      component="h1"
-                      variant="h2"
-                      align="center"
-                      color="text.primary"
-                      gutterBottom
-                    >
+              && (
+                <div>
+                  <Typography
+                    component="h1"
+                    variant="h2"
+                    align="center"
+                    color="text.primary"
+                    gutterBottom
+                  >
                     App Extension Helper
-                    </Typography>
-                    <Typography variant="h5" align="center" color="text.secondary" paragraph>
+                  </Typography>
+                  <Typography variant="h5" align="center" color="text.secondary" paragraph>
                     Connect to your GitHub accont to explore how you can extend your k8s application!
-                    </Typography>
-                    <Stack
-                      sx={{
-                        pt: 4 
-                      }}
-                      direction="row"
-                      spacing={2}
-                      justifyContent="center"
-                    >
-                      <Button variant="contained" onClick={selectRepos}>Connect to GitHub</Button>
-                    </Stack>
-                  </div>
-                )}
+                  </Typography>
+                  <Stack
+                    sx={{
+                      pt: 4
+                    }}
+                    direction="row"
+                    spacing={2}
+                    justifyContent="center"
+                  >
+                    <Button variant="contained" onClick={selectRepos}>Connect to GitHub</Button>
+                  </Stack>
+                </div>
+              )}
             {appState.baseDisplayState == BaseDisplayState.REPO_SELECT
-                && (
-                  <AppSelect
-                    appState={appState}
-                    setAppState={setAppState}
-                  />
-                )}
+              && (
+                <AppSelect
+                  appState={appState}
+                  setAppState={setAppState}
+                />
+              )}
             {appState.baseDisplayState == BaseDisplayState.EXTENSION_DISPLAY
-                && (
-                  <ExtensionsCard
-                    appState={appState}
-                    setAppState={setAppState}
-                  />
-                )}
+              && (
+                <ExtensionsCard
+                  appState={appState}
+                  setAppState={setAppState}
+                />
+              )}
             {appState.baseDisplayState == BaseDisplayState.INGRESS_DISPLAY
-                && (
-                  <IngressWorkflow
-                    appState={appState}
-                    setAppState={setAppState}
-                  />
-                )}
+              && (
+                <IngressWorkflow
+                  appState={appState}
+                  setAppState={setAppState}
+                />
+              )}
           </Container>
         </Box>
       </Box>
