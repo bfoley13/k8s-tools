@@ -7,6 +7,22 @@ Create a [GitHub access token](https://github.com/settings/tokens) with `repo` a
 ### React Frontend
 You can run the react app locally by running `npm install`, then `npm start` within the `frontend` directory.
 
+#### VSCode Config
+In order to follow formatting conventions via format-on-save: 
+Install [ESLint VSCode Extention](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+
+Enable ESLint formatting:
+- In Settings.JSON (Open Command Palette with CMD+Shift+P and type `'Open Settings (JSON)'`)
+- add/override
+    ```
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    }
+    ```
+- restart VSCode
+
+- Enable format on save in VSCode via settings
+
 ### Golang Backend
 The golang app has dependencies on Helm 2 and 3, and git being installed on the local machine. Helm 2 and 3 must be in the path as `helm2` and `helm3` respectively.
 

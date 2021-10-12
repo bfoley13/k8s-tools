@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Box, Stepper, Step, StepLabel, Button, Card, CardContent, Container, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Stack, Typography, TextField, FormControl, InputLabel, Select, MenuItem, Paper, CircularProgress} from "@mui/material";
+import { Box, Stepper, Step, StepLabel, Button, Card, CardContent, Container, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Stack, Typography, TextField, FormControl, InputLabel, Select, MenuItem, Paper, CircularProgress } from "@mui/material";
 import { AppState, BaseDisplayState } from "../../../../models/types";
 import { useState } from 'react';
 import { styled } from '@mui/material/styles';
@@ -11,7 +11,7 @@ import MuiAccordionDetails from '@mui/material/AccordionDetails';
 import { Repository, ServiceEntry, TreeEntry } from '../../../../models/github';
 import { CreateIngressPR, ListDirectories, ListRepositories, ListServices } from '../../../../api/github';
 import { Code, GitHub } from '@mui/icons-material';
-import {baseYaml, rule, path} from './yaml'
+import { baseYaml, rule, path } from './yaml'
 
 const ingressSteps = ["Select Backing Service", "Define Rules", "Select Addition Location", "Confirm"]
 
@@ -30,7 +30,7 @@ const Accordion = styled((props: AccordionProps) => (
 const AccordionSummary = styled((props: AccordionSummaryProps) => (
   <MuiAccordionSummary
     expandIcon={<ArrowForwardIosSharpIcon sx={{
-      fontSize: '0.9rem' 
+      fontSize: '0.9rem'
     }} />}
     {...props}
   />
@@ -58,9 +58,9 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 export default function IngressWorkflow(
   props: {
     appState: AppState,
-    setAppState : (appState: AppState) => void
+    setAppState: (appState: AppState) => void
   }) {
-  const {appState, setAppState} = props;
+  const { appState, setAppState } = props;
   const [services, setServices] = useState<ServiceEntry[]>([]);
   const [selectedServices, setSelectedServices] = useState<ServiceEntry[]>([]);
   const [chartDirectories, setChartDirectories] = useState<TreeEntry[]>([]);
@@ -71,6 +71,7 @@ export default function IngressWorkflow(
   const [selectedDirectory, setSelectedDirectory] = useState<string>("");
   const [filename, setFilename] = useState<string>("");
   const [prURL, setPRURL] = useState<string>("");
+  // eslint-disable-next-line prefer-const
   let [ingressDefinition, setIngressDefinition] = useState<string>(baseYaml);
 
   function createPR() {
@@ -141,7 +142,7 @@ export default function IngressWorkflow(
           })}
         </Stepper>
       </Box>
-      <Divider variant="inset"/>
+      <Divider variant="inset" />
       {workflowStep == 0 &&
         <Container
           maxWidth="sm"
@@ -174,7 +175,7 @@ export default function IngressWorkflow(
                               <React.Fragment>
                                 <Typography
                                   sx={{
-                                    display: 'inline' 
+                                    display: 'inline'
                                   }}
                                   component="span"
                                   variant="body2"
@@ -187,7 +188,7 @@ export default function IngressWorkflow(
                         </ListItemButton>
                       </ListItem>
                       {idx != services.length - 1 &&
-                    <Divider variant="inset" component="li" />
+                        <Divider variant="inset" component="li" />
                       }
                     </div>
                   )
@@ -217,7 +218,7 @@ export default function IngressWorkflow(
                   <AccordionDetails>
                     <div>
                       <Box sx={{
-                        display: 'flex', flexWrap: 'wrap', flexDirection: 'column' 
+                        display: 'flex', flexWrap: 'wrap', flexDirection: 'column'
                       }}>
                         <div style={{
                           display: 'flex', flexDirection: 'row'
@@ -254,7 +255,7 @@ export default function IngressWorkflow(
                             </Button>
                           </div>
                         </div>
-                        
+
                       </Box>
                     </div>
                   </AccordionDetails>

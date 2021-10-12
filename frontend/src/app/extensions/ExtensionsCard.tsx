@@ -55,14 +55,18 @@ export default function ExtensionsCard(
     appState: AppState,
     setAppState: (appState: AppState) => void
   }) {
-  const {appState, setAppState} = props;
+  const { appState, setAppState } = props;
 
   const selectIngress = () => {
-    setAppState({...appState, baseDisplayState: BaseDisplayState.INGRESS_DISPLAY})
+    setAppState({
+      ...appState, baseDisplayState: BaseDisplayState.INGRESS_DISPLAY
+    })
   }
 
   return (
-    <Grid sx={{ flexGrow: 1 }} container spacing={2}>
+    <Grid sx={{
+      flexGrow: 1
+    }} container spacing={2}>
       <Typography
         variant="h5"
         align="center"
@@ -81,8 +85,12 @@ export default function ExtensionsCard(
             ingressProviders.map((info, idx) => {
               return (
                 <Grid item key={idx}>
-                  <Card sx={{ height: 200, width: 150 }} onClick={selectIngress}>
-                    <CardActionArea sx={{ height: '100%' }}>
+                  <Card sx={{
+                    height: 200, width: 150
+                  }} onClick={selectIngress}>
+                    <CardActionArea sx={{
+                      height: '100%'
+                    }}>
                       <CardContent>
                         <img
                           src={info.logo}
@@ -134,8 +142,12 @@ export default function ExtensionsCard(
             serviceMeshProviders.map((info, idx) => {
               return (
                 <Grid item key={idx}>
-                  <Card sx={{ height: 200, width: 150 }} onClick={selectIngress}>
-                    <CardActionArea sx={{ height: '100%' }}>
+                  <Card sx={{
+                    height: 200, width: 150
+                  }} onClick={selectIngress}>
+                    <CardActionArea sx={{
+                      height: '100%'
+                    }}>
                       <CardContent>
                         <img
                           src={info.logo}
@@ -169,6 +181,6 @@ export default function ExtensionsCard(
         </Grid>
       </Grid>
 
-  </Grid>
+    </Grid>
   );
 }
