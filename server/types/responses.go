@@ -32,6 +32,10 @@ type TreeResponse struct {
 	Data []*TreeEntry `json:"data"`
 }
 
+type ActionResponse struct {
+	Data *Action `json:"data"`
+}
+
 type Repository struct {
 	ID          int64  `json:"id"`
 	Name        string `json:"name"`
@@ -65,6 +69,24 @@ type TreeEntry struct {
 
 type CreatePullRequestResponse struct {
 	PullRequestURL string `json:"pullRequestURL"`
+}
+
+type ActionInput struct {
+	Name string `json:"name"`
+	Description string `json:"description"`
+	Required bool `json:"required"`
+}
+
+type Action struct {
+	Name string `json:"name"`
+	Description string `json:"description"`
+	Inputs []ActionInput `json:"inputs"`
+}
+
+type ActionYml struct {
+	Name string
+	Description string
+	Inputs map[string]map[string]string
 }
 
 func GitHubToResponseRepository(repoOwner string, repos []*github.Repository) []*Repository {

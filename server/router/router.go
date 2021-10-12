@@ -19,6 +19,7 @@ func NewRouter(apiServer *routes.K8sService, getFS func() http.FileSystem) *mux.
 	router.HandleFunc("/api/github/repository/chartdirectory", corsHandler(apiServer.GetChartDirectories, "GET")).Methods("GET", "OPTIONS")
 	router.HandleFunc("/api/github/repository/pr", corsHandler(apiServer.CreateIngressPullRequest, "POST")).Methods("POST", "OPTIONS")
 	router.HandleFunc("/api/github/repository/test", corsHandler(apiServer.TestPut, "POST")).Methods("POST", "OPTIONS")
+	router.HandleFunc("/api/github/repository/action", corsHandler(apiServer.GetRepoAction, "GET")).Methods("GET", "OPTIONS")
 
 	//This handles serving the react bundle
 	router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(getFS())))

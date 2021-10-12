@@ -19,6 +19,23 @@ export interface ListWorkflowsEntryRequest {
   repoBranch: string;
 }
 
+export interface GetActionEntryRequest {
+  repoOwner: string;
+  repoName: string;
+}
+
+export interface ActionInput {
+  name: string;
+  description: string;
+  required: boolean;
+}
+
+export interface Action {
+  name: string;
+  description: string;
+  inputs: ActionInput[];
+}
+
 export interface ListServicesRequest {
   repoOwner: string;
   repoName: string;

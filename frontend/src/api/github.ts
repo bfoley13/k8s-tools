@@ -1,8 +1,10 @@
 import axios from "axios";
 import {
+  Action,
   Branch,
   ChartEntry,
   CreateIngressPRRequest,
+  GetActionEntryRequest,
   ListBranchesRequest,
   ListChartEntryRequest,
   ListDirectoriesRequest,
@@ -99,6 +101,46 @@ export function ListWorkflows(
       console.log("Got Response: ");
       console.log(resp);
       handleResponse(resp.data.data);
+    });
+}
+
+export function GetAction(
+  req: GetActionEntryRequest,
+  handleResponse: (response: Action) => void
+) {
+  console.log("GetAction");
+  console.log(req);
+
+  axios.defaults.baseURL = baseURL;
+
+  axios
+    .get(baseURL + "/api/github/repository/action", {
+      params: {
+        repoOwner: req.repoOwner,
+        repoName: req.repoName,
+        repoBranch: "master",
+      },
+    })
+    .then((resp) => {
+      console.log("Got Response: ");
+      console.log(resp);
+      handleResponse(resp.data.data);
+    })
+    .catch(() => {
+      console.log("Got Error. Retrying with main");
+      axios
+        .get(baseURL + "/api/github/repository/action", {
+          params: {
+            repoOwner: req.repoOwner,
+            repoName: req.repoName,
+            repoBranch: "main",
+          },
+        })
+        .then((resp) => {
+          console.log("Got Response: ");
+          console.log(resp);
+          handleResponse(resp.data.data);
+        });
     });
 }
 

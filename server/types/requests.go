@@ -30,3 +30,7 @@ type CreateIngressPullRequest struct {
 	IngressDirectory  string `json:"ingressDirectory"`
 	IngressFilename   string `json:"ingressFilename"`
 }
+
+type ActionRequest struct {
+	Url string  `json:"url"`
+}

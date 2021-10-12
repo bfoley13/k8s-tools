@@ -1,6 +1,6 @@
 import React from "react";
-import { ListWorkflows } from "../../../../api/github";
-import { WorkflowEntry } from "../../../../models/github";
+import { GetAction, ListWorkflows } from "../../../../api/github";
+import { Action, WorkflowEntry } from "../../../../models/github";
 import { AppState } from "../../../../models/types";
 import {
   Box,
@@ -29,14 +29,21 @@ import {
 } from "@mui/material";
 import { Code, GitHub } from "@mui/icons-material";
 
-const githubActionSteps = ["Select Workflow", "Add Actions", "Confirm"];
+const githubActionSteps = [
+  "Select Workflow",
+  "Select Action",
+  "Add Action",
+  "Confirm",
+];
 
 export default function GithubActionWorkflow(props: {
   appState: AppState;
   setAppState: (appState: AppState) => void;
 }) {
   const [workflows, setWorkflows] = React.useState<WorkflowEntry[]>([]);
+  const [actionUrl, setActionUrl] = React.useState<String>("");
   const { appState, setAppState } = props;
+  const [action, setAction] = React.useState<Action>();
   const [workflowStep, setWorkflowStep] = React.useState<number>(0);
   const [selectedWorkflow, setSelectedWorkflow] =
     React.useState<WorkflowEntry>();
@@ -51,6 +58,23 @@ export default function GithubActionWorkflow(props: {
       setWorkflows
     );
   }, []);
+
+  const getAction = () => {
+    let parts = actionUrl?.split("/");
+    const repoName = parts?.pop() || parts?.pop(); // handles trailing slash
+    const repoOwner = parts?.pop();
+
+    if (repoName && repoOwner) {
+      GetAction(
+        {
+          repoOwner: repoOwner,
+          repoName: repoName,
+        },
+        setAction
+      );
+      setWorkflowStep(workflowStep + 1);
+    }
+  };
 
   return (
     <Container maxWidth="md">
@@ -85,7 +109,7 @@ export default function GithubActionWorkflow(props: {
             color="text.secondary"
             paragraph
           >
-            Workflows
+            Select Workflow
           </Typography>
           <Paper>
             <List
@@ -133,7 +157,57 @@ export default function GithubActionWorkflow(props: {
           </Paper>
         </Container>
       )}
-      {workflowStep == 1 && <h1>{selectedWorkflow?.path}</h1>}
+      {workflowStep == 1 && (
+        <Container
+          maxWidth="sm"
+          sx={{
+            marginTop: "25px",
+          }}
+        >
+          <Typography
+            variant="h5"
+            align="center"
+            color="text.secondary"
+            paragraph
+          >
+            Select Action
+          </Typography>
+          <Paper sx={{ display: "flex", flexDirection: "column" }}>
+            <Divider />
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                flex: 1,
+                alignContent: "center",
+                margin: "20px",
+                marginBottom: "0px",
+                padding: "10px",
+              }}
+            >
+              <TextField
+                sx={{ margin: "4px", flex: 1 }}
+                id="standard-basic"
+                label="Github Action Repository URL"
+                variant="standard"
+                value={actionUrl}
+                onChange={(e) => setActionUrl(e.target.value)}
+              />
+              <Button variant="contained" onClick={() => getAction()}>
+                Use
+              </Button>
+            </div>
+            <Typography
+              style={{ marginLeft: "34px" }}
+              color="text.secondary"
+              paragraph
+            >
+              example: https://github.com/Azure/k8s-bake
+            </Typography>
+            <Divider />
+          </Paper>
+        </Container>
+      )}
     </Container>
   );
 }
