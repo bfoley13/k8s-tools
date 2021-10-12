@@ -182,7 +182,7 @@ export default function Base() {
                     App Extension Helper
                   </Typography>
                   <Typography variant="h5" align="center" color="text.secondary" paragraph>
-                    Connect to your GitHub accont to explore how you can extend your k8s application!
+                    Connect to your GitHub account to explore how you can extend your k8s application!
                   </Typography>
                   <Stack
                     sx={{
