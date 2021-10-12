@@ -119,12 +119,14 @@ func (api *K8sService) ListServices(w http.ResponseWriter, r *http.Request) {
 	manifestYamls := []string{}
 	var err error
 	if strings.Contains(manifestOptionPath, "Chart.yaml") {
+		log.Println("[ListServices] Using Chart.yaml")
 		manifestYamls, err = api.getHelmManifestYamls(repoName, repoOwner, repoBranch, manifestOptionPath)
 		if err != nil {
 			api.WriteHTTPErrorResponse(w, 500, err)
 			return
 		}
 	} else if strings.Contains(manifestOptionPath, "manifests") {
+		log.Println("[ListServices] Using manifests")
 		manifestYamls, err = api.getDefinedManifestYamls(context.Background(), repoName, repoOwner, repoBranch)
 		if err != nil {
 			api.WriteHTTPErrorResponse(w, 500, err)
@@ -169,6 +171,77 @@ func (api *K8sService) ListServices(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Println("[ListServices] completed")
+	w.WriteHeader(http.StatusOK)
+}
+
+func (api *K8sService) ListRepositoryWorkflows(w http.ResponseWriter, r *http.Request) {
+	log.Println("[ListRepositoryWorkflows] starting service call")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	ctx := context.Background()
+
+	params := r.URL.Query()
+	if _, ok := params["repoOwner"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid repoOwner parameter"))
+		return
+	}
+
+	if _, ok := params["repoName"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid repoName parameter"))
+		return
+	}
+
+	if _, ok := params["branchSha"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid branchSha parameter"))
+		return
+	}
+
+	repoOwner := params["repoOwner"][0]
+	repoName := params["repoName"][0]
+	branchSha := params["branchSha"][0]
+
+	tree, err := api.GHClient.GetBranchTree(ctx, repoOwner, repoName, branchSha)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("failed to get branch tree: %s", err.Error()))
+		return
+	}
+
+	workflowEntries := []*types.WorkflowDefinition{}
+	for _, entry := range tree.Entries {
+		if entry == nil || entry.Path == nil {
+			continue
+		}
+
+		log.Println("Path: ", *entry.Path)
+
+		if strings.Contains(*entry.Path, ".github/") && (strings.Contains(*entry.Path, ".yaml") || strings.Contains(*entry.Path, ".yml")) && *entry.Type == "blob" {
+			log.Println("Using Path: ", *entry.Path)
+			blob, err := api.GHClient.GetBlob(ctx, repoOwner, repoName, *entry.SHA)
+			if err != nil {
+				api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to get blog: %s", err.Error()))
+				return
+			}
+
+			yamlString, err := base64.StdEncoding.DecodeString(*blob.Content)
+			if err != nil {
+				log.Println("failed to decode yaml: ", *entry.Path)
+				continue
+			}
+			
+			workflowEntries = append(workflowEntries, &types.WorkflowDefinition{
+				SHA: *entry.SHA,
+				Path: *entry.Path,
+				WorkflowYaml: string(yamlString),
+			})
+		}
+	}
+
+	log.Println("[ListRepositoryWorkflows] Completed")
+	if err := json.NewEncoder(w).Encode(types.ListWorkflowResponse{Data: workflowEntries}); err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 }
 

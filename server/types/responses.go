@@ -28,6 +28,10 @@ type TreeResponse struct {
 	Data []*TreeEntry `json:"data"`
 }
 
+type ListWorkflowResponse struct {
+	Data []*WorkflowDefinition `json:"data"`
+}
+
 type Repository struct {
 	ID          int64  `json:"id"`
 	Name        string `json:"name"`
@@ -52,6 +56,12 @@ type Service struct {
 type TreeEntry struct {
 	SHA  string `json:"sha"`
 	Path string `json:"path"`
+}
+
+type WorkflowDefinition struct {
+	SHA  string `json:"sha"`
+	Path string `json:"path"`
+	WorkflowYaml string `json:"workflowYaml"`
 }
 
 type CreatePullRequestResponse struct {

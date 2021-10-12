@@ -1,3 +1,5 @@
+/* eslint-disable prefer-const */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import * as React from 'react';
 import { Box, Stepper, Step, StepLabel, Button, Card, CardContent, Container, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Stack, Typography, TextField, FormControl, InputLabel, Select, MenuItem, Paper, CircularProgress } from "@mui/material";
 import { AppState, BaseDisplayState } from "../../../../models/types";
@@ -8,12 +10,12 @@ import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import MuiAccordion, { AccordionProps } from '@mui/material/Accordion';
 import MuiAccordionSummary, { AccordionSummaryProps } from '@mui/material/AccordionSummary';
 import MuiAccordionDetails from '@mui/material/AccordionDetails';
-import { Repository, ServiceEntry, TreeEntry } from '../../../../models/github';
-import { CreateIngressPR, ListDirectories, ListRepositories, ListServices } from '../../../../api/github';
+import { Repository, RepoWorkflow, ServiceEntry, TreeEntry } from '../../../../models/github';
+import { CreateIngressPR, ListDirectories, ListRepositories, ListRepoWorkflows, ListServices } from '../../../../api/github';
 import { Code, GitHub } from '@mui/icons-material';
 import { baseYaml, rule, path } from './yaml'
 
-const ingressSteps = ["Select Backing Service", "Define Rules", "Select Addition Location", "Confirm"]
+const ingressSteps = ["Select Backing Service", "Define Rules", "Select Ingress Location", "Select Workflow", "Add Ingress Deployment", "Confirm"]
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -68,11 +70,14 @@ export default function IngressWorkflow(
   const [accordionIndex, setAccordionIndex] = useState<number>(0);
   const [ingressName, setIngressName] = useState<string>("");
   const [ruleCount, setRuleCount] = useState<number>(0);
+  const [repoWorkflows, setRepoWorkflows] = useState<RepoWorkflow[]>([]);
   const [selectedDirectory, setSelectedDirectory] = useState<string>("");
+  const [selectedWorkflow, setSelectedWorkflow] = useState<RepoWorkflow>();
   const [filename, setFilename] = useState<string>("");
   const [prURL, setPRURL] = useState<string>("");
   // eslint-disable-next-line prefer-const
   let [ingressDefinition, setIngressDefinition] = useState<string>(baseYaml);
+  let [workflowDefinition, setWorkflowDefinition] = useState<string>("");
 
   function createPR() {
     CreateIngressPR({
@@ -104,6 +109,14 @@ export default function IngressWorkflow(
     }, setChartDirectories);
   }, [])
 
+  React.useEffect(() => {
+    ListRepoWorkflows({
+      repoOwner: appState.ghUserName,
+      repoName: appState.repo.name,
+      branchSha: appState.branch.sha
+    }, setRepoWorkflows);
+  }, [selectedDirectory])
+
   function selectServices(services: ServiceEntry[]) {
     setSelectedServices(services);
     setWorkflowStep(1);
@@ -121,6 +134,18 @@ export default function IngressWorkflow(
     setIngressDefinition(ingressDefinition + "");
     setWorkflowStep(workflowStep + 1);
     console.log(ingressDefinition);
+  }
+
+  function saveWorkflowYaml() {
+    setWorkflowDefinition(workflowDefinition + "");
+    setWorkflowStep(workflowStep + 1);
+    console.log(workflowDefinition);
+  }
+
+  function selectWorkflow(workflow: RepoWorkflow) {
+    setSelectedWorkflow(workflow)
+    setWorkflowDefinition(workflow.workflowYaml)
+    setWorkflowStep(workflowStep + 1);
   }
 
   return (
@@ -343,6 +368,114 @@ export default function IngressWorkflow(
             padding: '20px'
           }}>
             <Typography variant="h5" align="center" color="text.secondary" paragraph>
+              Select GitHub Workflow
+            </Typography>
+            <List
+              sx={{
+                overflow: 'auto',
+                maxHeight: 500,
+              }}
+            >
+              {
+                repoWorkflows.map((repoWorkflow, idx) => {
+                  return (
+                    <div key={idx}>
+                      <ListItem key={"service-" + idx} onClick={() => selectWorkflow(repoWorkflow)}>
+                        <ListItemButton>
+                          <ListItemIcon>
+                            <Code />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={repoWorkflow.path}
+                            secondary={
+                              <React.Fragment>
+                                <Typography
+                                  sx={{
+                                    display: 'inline'
+                                  }}
+                                  component="span"
+                                  variant="body2"
+                                  color="text.primary"
+                                >
+                                </Typography>
+                              </React.Fragment>
+                            }
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                      {idx != services.length - 1 &&
+                        <Divider variant="inset" component="li" />
+                      }
+                    </div>
+                  )
+                })
+              }
+            </List>
+          </Paper>
+          <Button variant="contained" sx={{
+            float: 'left', marginTop: '10px'
+          }} onClick={() => setWorkflowStep(workflowStep - 1)}>
+            Back
+          </Button>
+          <Button variant="contained" sx={{
+            float: 'right', marginTop: '10px'
+          }} onClick={() => setWorkflowStep(workflowStep + 1)}>
+            Next
+          </Button>
+        </Container>
+      }
+      {selectedWorkflow && workflowStep == 4 &&
+        <Container
+          maxWidth="md"
+          sx={{
+            marginTop: "25px"
+          }}
+        >
+          <Paper sx={{
+            padding: '20px'
+          }}>
+            <Typography variant="h5" align="center" color="text.secondary" paragraph>
+              Ingress Configuration Confirmation
+            </Typography>
+            <MonacoEditor
+              language="yaml"
+              value={workflowDefinition}
+              options={{
+                theme: 'vs-dark',
+              }}
+              style={{
+                width: '100%',
+                minHeight: '500px'
+              }}
+              onChange={(s, e) => {
+                console.log(e);
+                workflowDefinition = s;
+              }}
+            />
+          </Paper>
+          <Button variant="contained" sx={{
+            float: 'left', marginTop: '10px'
+          }} onClick={() => setWorkflowStep(workflowStep - 1)}>
+            Back
+          </Button>
+          <Button variant="contained" sx={{
+            float: 'right', marginTop: '10px'
+          }} onClick={() => saveWorkflowYaml()}>
+            Next
+          </Button>
+        </Container>
+      }
+      {workflowStep == 5 &&
+        <Container
+          maxWidth="md"
+          sx={{
+            marginTop: "25px"
+          }}
+        >
+          <Paper sx={{
+            padding: '20px'
+          }}>
+            <Typography variant="h5" align="center" color="text.secondary" paragraph>
               Ingress Configuration Confirmation
             </Typography>
             <div style={{
@@ -367,7 +500,7 @@ export default function IngressWorkflow(
           </Button>
         </Container>
       }
-      {workflowStep == 4 &&
+      {workflowStep == 6 &&
         <Container
           maxWidth="md"
           sx={{

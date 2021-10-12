@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Branch, ChartEntry, CreateIngressPRRequest, ListBranchesRequest, ListChartEntryRequest, ListDirectoriesRequest, ListRepositoriesRequest, ListServicesRequest, Repository, ServiceEntry, TreeEntry } from "../models/github";
+import { Branch, ChartEntry, CreateIngressPRRequest, ListBranchesRequest, ListChartEntryRequest, ListDirectoriesRequest, ListRepositoriesRequest, ListRepoWorkflowRequest, ListServicesRequest, Repository, RepoWorkflow, ServiceEntry, TreeEntry } from "../models/github";
 
 const baseURL = "http://localhost:8080";
 axios.defaults.baseURL = baseURL
@@ -64,6 +64,24 @@ export function ListServices(req: ListServicesRequest, handleResponse: (response
       repoName: req.repoName,
       repoBranch: req.repoBranch,
       manifestOptionPath: req.manifestOptionPath
+    }
+  })
+    .then((resp) => {
+      console.log("Got Response: ")
+      console.log(resp)
+      handleResponse(resp.data.data);
+    })
+}
+
+export function ListRepoWorkflows(req: ListRepoWorkflowRequest, handleResponse: (response: RepoWorkflow[]) => void) {
+  console.log("ListRepoWorkflows");
+  console.log(req);
+  axios.defaults.baseURL = baseURL
+  axios.get(baseURL + "/api/github/repository/workflows", {
+    params: {
+      repoOwner: req.repoOwner,
+      repoName: req.repoName,
+      branchSha: req.branchSha,
     }
   })
     .then((resp) => {
