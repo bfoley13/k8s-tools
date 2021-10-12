@@ -27,6 +27,12 @@ export interface ListDirectoriesRequest {
   chartPath: string;
 }
 
+export interface ListRepoWorkflowRequest {
+  repoOwner: string;
+  repoName: string;
+  branchSha: string;
+}
+
 export interface CreateIngressPRRequest {
   repoOwner: string;
   repoName: string;
@@ -60,4 +66,10 @@ export interface ServiceEntry {
 export interface TreeEntry {
   sha: string;
   path: string;
+}
+
+export interface RepoWorkflow {
+  workflowYaml: string;
+  path: string;
+  sha: string;
 }
