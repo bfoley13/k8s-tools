@@ -36,7 +36,7 @@ import {
 import { Code, Help } from "@mui/icons-material";
 import { isConstructorDeclaration } from "typescript";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { lightfair } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import { coy as prismTheme } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 const githubActionSteps = [
   "Select Workflow",
@@ -393,12 +393,7 @@ export default function GithubActionWorkflow(props: {
             Add Action
           </Typography>
           <Paper>
-            <SyntaxHighlighter
-              wrapLongLines
-              useInlineStyles
-              language="yaml"
-              style={lightfair}
-            >
+            <SyntaxHighlighter wrapLongLines language="yaml" style={prismTheme}>
               {splitWorkflow().metadata}
             </SyntaxHighlighter>
           </Paper>
@@ -415,9 +410,8 @@ export default function GithubActionWorkflow(props: {
                 <Paper style={{ margin: "0px", width: "100%" }}>
                   <SyntaxHighlighter
                     wrapLongLines
-                    useInlineStyles
                     language="yaml"
-                    style={lightfair}
+                    style={prismTheme}
                   >
                     {step}
                   </SyntaxHighlighter>
