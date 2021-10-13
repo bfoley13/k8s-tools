@@ -6,14 +6,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"strings"
+	"time"
 
 	"k8s-tooling-adapter/server/types"
 
 	"github.com/google/go-github/v38/github"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
+)
+
+const (
+	charset = "abcdefghijklmnopqrstuvwxyz"
 )
 
 func (api *K8sService) ListManifestOption(w http.ResponseWriter, r *http.Request) {
@@ -228,10 +234,10 @@ func (api *K8sService) ListRepositoryWorkflows(w http.ResponseWriter, r *http.Re
 				log.Println("failed to decode yaml: ", *entry.Path)
 				continue
 			}
-			
+
 			workflowEntries = append(workflowEntries, &types.WorkflowDefinition{
-				SHA: *entry.SHA,
-				Path: *entry.Path,
+				SHA:          *entry.SHA,
+				Path:         *entry.Path,
 				WorkflowYaml: string(yamlString),
 			})
 		}
@@ -333,7 +339,7 @@ func (api *K8sService) CreateIngressPullRequest(w http.ResponseWriter, r *http.R
 	}
 	log.Printf("[CreateIngressPullRequest] Request: %+v\n", createPRRequest)
 
-	newBranchName := "bot-test-branch"
+	newBranchName := generateBranchName(charset, 5)
 
 	fmt.Println("[CreateIngressPullRequest] Getting repo reference")
 	ref, err := api.GHClient.GetReference(ctx, createPRRequest.RepoOwner, createPRRequest.RepoName, newBranchName, createPRRequest.RepoBranch)
@@ -349,8 +355,21 @@ func (api *K8sService) CreateIngressPullRequest(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	newWorkflowFileName := ""
+	if createPRRequest.WorkflowFile != "" {
+		fmt.Println("[CreateIngressPullRequest] Saving workflow definition locally")
+		newWorkflowFileName, err = api.LocalRepoService.SaveFile(createPRRequest.RepoOwner, createPRRequest.RepoName, createPRRequest.RepoBranch, createPRRequest.WorkflowDefinition, createPRRequest.WorkflowFile)
+		if err != nil {
+			api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to save file: %s", err))
+			return
+		}
+	}
+
 	fmt.Println("[CreateIngressPullRequest] Creating new commit tree")
 	sourceFile := fmt.Sprintf("%s:%s", newFileName, createPRRequest.IngressDirectory+"/"+createPRRequest.IngressFilename)
+	if newWorkflowFileName != "" {
+		sourceFile = fmt.Sprintf("%s,%s:%s", sourceFile, newWorkflowFileName, createPRRequest.WorkflowFile)
+	}
 	tree, err := api.GHClient.GenerateCommitTree(ctx, ref, createPRRequest.RepoOwner, createPRRequest.RepoName, sourceFile)
 	if err != nil {
 		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to generate new commit tree: %s", err.Error()))
@@ -365,7 +384,11 @@ func (api *K8sService) CreateIngressPullRequest(w http.ResponseWriter, r *http.R
 	}
 
 	fmt.Println("[CreateIngressPullRequest] Generating pull request")
-	pr, err := api.GHClient.CreatePullRequest(ctx, "Ingress Addition", createPRRequest.RepoOwner, createPRRequest.RepoName, createPRRequest.RepoBranch, "Adding ingress definition", createPRRequest.RepoOwner, createPRRequest.RepoName, newBranchName)
+	msg := "Adding ingress definition"
+	if newWorkflowFileName != "" {
+		msg = "Adding ingress definition and deployment to workflow"
+	}
+	pr, err := api.GHClient.CreatePullRequest(ctx, "Ingress Addition", createPRRequest.RepoOwner, createPRRequest.RepoName, createPRRequest.RepoBranch, msg, createPRRequest.RepoOwner, createPRRequest.RepoName, newBranchName)
 	if err != nil {
 		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to create pull request: %s", err.Error()))
 		return
@@ -439,4 +462,20 @@ func (api *K8sService) getDefinedManifestYamls(ctx context.Context, repoName, re
 	}
 
 	return yamlBlobs, nil
+}
+
+func generateBranchName(charSet string, codeLength int32) string {
+	code := "bot-test-branch-"
+	charSetLength := int32(len(charSet))
+	for i := int32(0); i < codeLength; i++ {
+		index := randomNumber(0, charSetLength)
+		code += string(charSet[index])
+	}
+
+	return code
+}
+
+func randomNumber(min, max int32) int32 {
+	rand.Seed(time.Now().UnixNano())
+	return min + int32(rand.Intn(int(max-min)))
 }

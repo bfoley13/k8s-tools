@@ -38,3 +38,7 @@ export const path = `      - path: <URL_PATH>
             port:
               number: <SERVICE_PORT>
 `;
+
+export const ingressWorkflow = {
+  uses: "NickKeller/NginxIngressController@main",
+};

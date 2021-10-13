@@ -40,6 +40,8 @@ export interface CreateIngressPRRequest {
   ingressDefinition: string;
   ingressDirectory: string;
   ingressFilename: string;
+  workflowDefinition: string;
+  workflowFile: string;
 }
 
 export interface Repository {
