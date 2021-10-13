@@ -40,7 +40,7 @@ export default function Base() {
   const [appState, setAppState] = React.useState<AppState>(
     {
       ...emptyAppState(),
-      ghUserName: 'davidgamero',
+      ghUserName: '',
     },
   );
   const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
