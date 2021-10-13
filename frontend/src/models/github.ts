@@ -19,6 +19,23 @@ export interface ListWorkflowsEntryRequest {
   repoBranch: string;
 }
 
+export interface GetWorkflowEntryRequest {
+  repoOwner: string;
+  repoName: string;
+  repoBranch: string;
+  sha: string;
+}
+
+export interface Workflow {
+  contents: string;
+}
+
+export interface WorkflowFileSplit {
+  metadata: string;
+  steps: string[];
+  newStep: string;
+}
+
 export interface GetActionEntryRequest {
   repoOwner: string;
   repoName: string;

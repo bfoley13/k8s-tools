@@ -5,6 +5,7 @@ import {
   ChartEntry,
   CreateIngressPRRequest,
   GetActionEntryRequest,
+  GetWorkflowEntryRequest,
   ListBranchesRequest,
   ListChartEntryRequest,
   ListDirectoriesRequest,
@@ -14,6 +15,7 @@ import {
   Repository,
   ServiceEntry,
   TreeEntry,
+  Workflow,
   WorkflowEntry,
 } from "../models/github";
 
@@ -95,6 +97,30 @@ export function ListWorkflows(
         repoOwner: req.repoOwner,
         repoName: req.repoName,
         repoBranch: req.repoBranch,
+      },
+    })
+    .then((resp) => {
+      console.log("Got Response: ");
+      console.log(resp);
+      handleResponse(resp.data.data);
+    });
+}
+
+export function GetWorkflow(
+  req: GetWorkflowEntryRequest,
+  handleResponse: (response: Workflow) => void
+) {
+  console.log("GetWorkflow");
+  console.log(req);
+  axios.defaults.baseURL = baseURL;
+
+  axios
+    .get(baseURL + "/api/github/repository/workflow", {
+      params: {
+        repoOwner: req.repoOwner,
+        repoName: req.repoName,
+        repoBranch: req.repoBranch,
+        sha: req.sha,
       },
     })
     .then((resp) => {

@@ -1,6 +1,11 @@
 import React from "react";
-import { GetAction, ListWorkflows } from "../../../../api/github";
-import { Action, WorkflowEntry } from "../../../../models/github";
+import { GetAction, GetWorkflow, ListWorkflows } from "../../../../api/github";
+import {
+  Action,
+  Workflow,
+  WorkflowEntry,
+  WorkflowFileSplit,
+} from "../../../../models/github";
 import { AppState } from "../../../../models/types";
 import {
   Box,
@@ -30,6 +35,8 @@ import {
 } from "@mui/material";
 import { Code, Help } from "@mui/icons-material";
 import { isConstructorDeclaration } from "typescript";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { lightfair } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 const githubActionSteps = [
   "Select Workflow",
@@ -53,6 +60,7 @@ export default function GithubActionWorkflow(props: {
   );
   const [selectedWorkflow, setSelectedWorkflow] =
     React.useState<WorkflowEntry>();
+  const [workflow, setWorkflow] = React.useState<Workflow>({ contents: "" });
 
   const addActionField = (name: string, val: string) => {
     setActionFields(new Map(actionFields.set(name, val)));
@@ -65,8 +73,6 @@ export default function GithubActionWorkflow(props: {
         !actionFields.has(input.name) ||
         actionFields.get(input.name)?.length == 0
     );
-    console.log(required);
-    console.log(unfulfilled);
 
     return !!unfulfilled && unfulfilled?.length == 0;
   };
@@ -83,6 +89,7 @@ export default function GithubActionWorkflow(props: {
   }, []);
 
   const getAction = () => {
+    getWorkflow();
     let parts = actionUrl?.split("/");
     const repoName = parts?.pop() || parts?.pop(); // handles trailing slash
     const repoOwner = parts?.pop();
@@ -97,6 +104,69 @@ export default function GithubActionWorkflow(props: {
       );
       setWorkflowStep(workflowStep + 1);
     }
+  };
+
+  const getWorkflow = () => {
+    GetWorkflow(
+      {
+        repoOwner: appState.ghUserName,
+        repoName: appState.repo.name,
+        repoBranch: appState.branch.name,
+        sha: selectedWorkflow?.sha ?? "",
+      },
+      setWorkflow
+    );
+  };
+
+  const splitWorkflow = (): WorkflowFileSplit => {
+    // TODO: Add better error handling? What if no workflow? What if no steps?
+
+    const split = workflow.contents.split(/(steps:\s?)/);
+    const lines = split[2].split(/\r?\n/);
+    let spaces = 0;
+    for (const line of lines) {
+      if (line.trimLeft().length == 0) {
+        continue;
+      }
+
+      spaces = line.split("-")[0].length;
+      break;
+    }
+
+    // generate steps
+    let steps = split[2].split(/(?=- )/g);
+    steps = steps.map((step) => step.trimRight());
+    steps = steps.filter((step) => step.length > 0);
+    steps = steps.map((step) =>
+      step
+        .split("\n")
+        .map((line) => " ".repeat(spaces) + line)
+        .join("\n")
+    );
+
+    // generate new step
+    let secondSpaces = 2;
+    for (const step of steps) {
+      const splitStep = step.split("\n");
+      if (splitStep.length > 1) {
+        const firstCharIndex = splitStep[1].match("[a-zA-Z]")?.index || 2;
+        secondSpaces = firstCharIndex;
+        break;
+      }
+    }
+
+    let parts = actionUrl?.split("/");
+    const repoName = parts?.pop() || parts?.pop(); // handles trailing slash
+    const repoOwner = parts?.pop();
+    let newStep = `${" ".repeat(spaces)}- uses: ${repoOwner}/${repoName}}`;
+    if (actionFields.size > 0) {
+      newStep += `\n${" ".repeat(spaces)}  with:`;
+    }
+    actionFields.forEach((val, key) => {
+      newStep += `\n${" ".repeat(secondSpaces)}${key}: '${val}'`;
+    });
+
+    return { metadata: split[0] + split[1], steps, newStep };
   };
 
   return (
@@ -295,7 +365,8 @@ export default function GithubActionWorkflow(props: {
               variant="contained"
               onClick={() => {
                 if (hasRequiredFields()) {
-                  console.log(actionFields);
+                  console.log(workflow);
+                  console.log(splitWorkflow());
                   setWorkflowStep(workflowStep + 1);
                 }
               }}
@@ -303,6 +374,50 @@ export default function GithubActionWorkflow(props: {
               Add
             </Button>
           </Paper>
+        </Container>
+      )}
+
+      {workflowStep == 3 && (
+        <Container
+          maxWidth="md"
+          sx={{
+            marginTop: "25px",
+          }}
+        >
+          <Typography
+            variant="h5"
+            align="center"
+            color="text.secondary"
+            paragraph
+          >
+            Add Action
+          </Typography>
+          <Paper>
+            <SyntaxHighlighter
+              wrapLongLines
+              useInlineStyles
+              language="yaml"
+              style={lightfair}
+            >
+              {splitWorkflow().metadata}
+            </SyntaxHighlighter>
+          </Paper>
+          <List style={{ padding: 0, margin: 0 }}>
+            {splitWorkflow().steps.map((step) => (
+              <ListItem style={{ padding: 0, margin: 0, marginBottom: "5px" }}>
+                <Paper style={{ margin: "0px" }}>
+                  <SyntaxHighlighter
+                    wrapLongLines
+                    useInlineStyles
+                    language="yaml"
+                    style={lightfair}
+                  >
+                    {step}
+                  </SyntaxHighlighter>
+                </Paper>
+              </ListItem>
+            ))}
+          </List>
         </Container>
       )}
     </Container>

@@ -89,6 +89,14 @@ type ActionYml struct {
 	Inputs map[string]map[string]string
 }
 
+type WorkflowFile struct {
+	Contents string `json:"contents"`
+}
+
+type WorkflowFileResponse struct {
+	Data *WorkflowFile  `json:"data"`
+}
+
 func GitHubToResponseRepository(repoOwner string, repos []*github.Repository) []*Repository {
 	respRepos := make([]*Repository, 0)
 	for _, repo := range repos {

@@ -14,3 +14,5 @@
 
 # built binary
 k8s_tools
+
+/node_modules

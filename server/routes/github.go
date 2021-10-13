@@ -212,7 +212,6 @@ func (api *K8sService) GetRepoAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("%s", stringYmlFile)
 	var yamlConfig types.ActionYml
 	err = yaml.Unmarshal(stringYmlFile, &yamlConfig)
 	if err != nil {
@@ -259,6 +258,59 @@ func (api *K8sService) GetRepoAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Println("[GetRepoAction] completed")
+	w.WriteHeader(http.StatusOK)
+}
+
+func (api *K8sService) GetWorkflowFile(w http.ResponseWriter, r *http.Request) {
+	log.Println("[GetWorkflowFile] starting service call")
+	ctx := context.Background()
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	params := r.URL.Query()
+	if _, ok := params["repoOwner"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid repoOwner parameter"))
+		return
+	}
+
+	if _, ok := params["repoName"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid repoName parameter"))
+		return
+	}
+
+	if _, ok := params["repoBranch"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid repoBranch parameter"))
+		return
+	}
+
+	repoOwner := params["repoOwner"][0]
+	repoName := params["repoName"][0]
+	sha := params["sha"][0]
+
+	blob, err := api.GHClient.GetBlob(ctx, repoOwner, repoName, sha)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
+
+	bytesYmlFile, err := base64.StdEncoding.DecodeString(blob.GetContent())
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
+
+	stringYmlFile := string(bytesYmlFile[:])
+	resp := types.WorkflowFileResponse{
+		Data: &types.WorkflowFile{Contents: stringYmlFile},
+	}
+
+	log.Println(("[GetWorkflowFile] Writing response"))
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
+
+	log.Println("[GetWorkflowFile] completed")
 	w.WriteHeader(http.StatusOK)
 }
 
