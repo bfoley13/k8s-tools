@@ -404,8 +404,15 @@ export default function GithubActionWorkflow(props: {
           </Paper>
           <List style={{ padding: 0, margin: 0 }}>
             {splitWorkflow().steps.map((step) => (
-              <ListItem style={{ padding: 0, margin: 0, marginBottom: "5px" }}>
-                <Paper style={{ margin: "0px" }}>
+              <ListItem
+                style={{
+                  padding: 0,
+                  margin: 0,
+                  marginBottom: "5px",
+                  width: "100%",
+                }}
+              >
+                <Paper style={{ margin: "0px", width: "100%" }}>
                   <SyntaxHighlighter
                     wrapLongLines
                     useInlineStyles
