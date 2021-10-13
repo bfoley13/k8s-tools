@@ -7,6 +7,12 @@ axios.defaults.baseURL = baseURL
 
 export function ListRepositories(req: ListRepositoriesRequest, handleResponse: (response: Repository[]) => void) {
   console.log("ListRepositories");
+
+  if (!req.repoOwner) {
+    console.warn("ListRepositories cancelled due to blank username")
+    return
+  }
+
   axios.defaults.baseURL = baseURL
   axios.get(baseURL + "/api/github/repositories", {
     params: {
@@ -22,6 +28,12 @@ export function ListRepositories(req: ListRepositoriesRequest, handleResponse: (
 
 export function ListBranches(req: ListBranchesRequest, handleResponse: (response: Branch[]) => void) {
   console.log("ListBranches");
+
+  if (!req.repoOwner) {
+    console.warn("ListBranches cancelled due to blank username")
+    return
+  }
+
   axios.defaults.baseURL = baseURL
   axios.get(baseURL + "/api/github/repository/branches", {
     params: {
@@ -39,6 +51,12 @@ export function ListBranches(req: ListBranchesRequest, handleResponse: (response
 export function ListCharts(req: ListChartEntryRequest, handleResponse: (response: ChartEntry[]) => void) {
   console.log("ListCharts");
   console.log(req);
+
+  if (!req.repoOwner) {
+    console.warn("ListCharts cancelled due to blank username")
+    return
+  }
+
   axios.defaults.baseURL = baseURL
   axios.get(baseURL + "/api/github/repository/charts", {
     params: {
@@ -57,6 +75,12 @@ export function ListCharts(req: ListChartEntryRequest, handleResponse: (response
 export function ListServices(req: ListServicesRequest, handleResponse: (response: ServiceEntry[]) => void) {
   console.log("ListServices");
   console.log(req);
+
+  if (!req.repoOwner) {
+    console.warn("ListServices cancelled due to blank username")
+    return
+  }
+
   axios.defaults.baseURL = baseURL
   axios.get(baseURL + "/api/github/repository/services", {
     params: {
@@ -76,6 +100,12 @@ export function ListServices(req: ListServicesRequest, handleResponse: (response
 export function ListRepoWorkflows(req: ListRepoWorkflowRequest, handleResponse: (response: RepoWorkflow[]) => void) {
   console.log("ListRepoWorkflows");
   console.log(req);
+
+  if (!req.repoOwner) {
+    console.warn("ListRepoWorkflows cancelled due to blank username")
+    return
+  }
+
   axios.defaults.baseURL = baseURL
   axios.get(baseURL + "/api/github/repository/workflows", {
     params: {
@@ -92,8 +122,14 @@ export function ListRepoWorkflows(req: ListRepoWorkflowRequest, handleResponse: 
 }
 
 export function ListDirectories(req: ListDirectoriesRequest, handleResponse: (response: TreeEntry[]) => void) {
-  console.log("ListServices");
+  console.log("ListDirectories");
   console.log(req);
+
+  if (!req.repoOwner) {
+    console.warn("ListDirectories cancelled due to blank username")
+    return
+  }
+
   axios.defaults.baseURL = baseURL
   axios.get(baseURL + "/api/github/repository/chartdirectory", {
     params: {
@@ -113,6 +149,12 @@ export function ListDirectories(req: ListDirectoriesRequest, handleResponse: (re
 export function CreateIngressPR(req: CreateIngressPRRequest, handleResponse: (prURL: string) => void) {
   console.log("CreateIngressPR");
   console.log(req);
+
+  if (!req.repoOwner) {
+    console.warn("CreateIngressPR cancelled due to blank username")
+    return
+  }
+
   axios.defaults.baseURL = baseURL
   axios.post(baseURL + '/api/github/repository/pr', req)
     .then((resp) => {
