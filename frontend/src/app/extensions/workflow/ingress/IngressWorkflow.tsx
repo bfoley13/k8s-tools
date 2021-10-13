@@ -13,7 +13,8 @@ import MuiAccordionDetails from '@mui/material/AccordionDetails';
 import { Repository, RepoWorkflow, ServiceEntry, TreeEntry } from '../../../../models/github';
 import { CreateIngressPR, ListDirectories, ListRepositories, ListRepoWorkflows, ListServices } from '../../../../api/github';
 import { Code, GitHub } from '@mui/icons-material';
-import { baseYaml, rule, path } from './yaml'
+import { baseYaml, rule, path, ingressWorkflow } from './yaml';
+import YAML from 'yaml';
 
 const ingressSteps = ["Select Backing Service", "Define Rules", "Select Ingress Location", "Select Workflow", "Add Ingress Deployment", "Confirm"]
 
@@ -75,11 +76,17 @@ export default function IngressWorkflow(
   const [selectedWorkflow, setSelectedWorkflow] = useState<RepoWorkflow>();
   const [filename, setFilename] = useState<string>("");
   const [prURL, setPRURL] = useState<string>("");
+  const [showWorkflowSelect, setShowWorkflowSelect] = useState<boolean>(false);
+
   // eslint-disable-next-line prefer-const
   let [ingressDefinition, setIngressDefinition] = useState<string>(baseYaml);
   let [workflowDefinition, setWorkflowDefinition] = useState<string>("");
 
   function createPR() {
+    let workflowDir = "";
+    if (selectedWorkflow != undefined) {
+      workflowDir = selectedWorkflow.path;
+    }
     CreateIngressPR({
       repoOwner: appState.ghUserName,
       repoName: appState.repo.name,
@@ -87,6 +94,8 @@ export default function IngressWorkflow(
       ingressDefinition: ingressDefinition,
       ingressDirectory: selectedDirectory,
       ingressFilename: filename,
+      workflowDefinition: workflowDefinition,
+      workflowFile: workflowDir
     }, setPRURL)
     setWorkflowStep(workflowStep + 1);
   }
@@ -143,9 +152,22 @@ export default function IngressWorkflow(
   }
 
   function selectWorkflow(workflow: RepoWorkflow) {
+    let yamlObj = YAML.parse(workflow.workflowYaml);
+    console.log(yamlObj);
+    console.log(yamlObj.jobs.aks.steps);
+    yamlObj.jobs.aks.steps.push(ingressWorkflow);
+    let finalYaml = YAML.stringify(yamlObj);
     setSelectedWorkflow(workflow)
-    setWorkflowDefinition(workflow.workflowYaml)
+    setWorkflowDefinition(finalYaml)
     setWorkflowStep(workflowStep + 1);
+  }
+
+  const noAddToWorkflow = () => {
+    setWorkflowStep(5);
+  }
+
+  const addToWorkflow = () => {
+    setShowWorkflowSelect(true);
   }
 
   return (
@@ -368,49 +390,80 @@ export default function IngressWorkflow(
             padding: '20px'
           }}>
             <Typography variant="h5" align="center" color="text.secondary" paragraph>
-              Select GitHub Workflow
+              Add to Workflow?
             </Typography>
-            <List
-              sx={{
-                overflow: 'auto',
-                maxHeight: 500,
-              }}
-            >
-              {
-                repoWorkflows.map((repoWorkflow, idx) => {
-                  return (
-                    <div key={idx}>
-                      <ListItem key={"service-" + idx} onClick={() => selectWorkflow(repoWorkflow)}>
-                        <ListItemButton>
-                          <ListItemIcon>
-                            <Code />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={repoWorkflow.path}
-                            secondary={
-                              <React.Fragment>
-                                <Typography
-                                  sx={{
-                                    display: 'inline'
-                                  }}
-                                  component="span"
-                                  variant="body2"
-                                  color="text.primary"
-                                >
-                                </Typography>
-                              </React.Fragment>
+            <div>
+              <div style={{
+                display: 'flex', flexWrap: 'wrap', flexDirection: 'row', marginTop: '10px'
+              }}>
+                <Button variant="contained" sx={{
+                  margin: 'auto'
+                }} onClick={addToWorkflow}>
+                  Yes
+                </Button>
+                <Button variant="contained" sx={{
+                  margin: 'auto'
+                }} onClick={noAddToWorkflow}>
+                  No
+                </Button>
+              </div>
+            </div>
+            {showWorkflowSelect &&
+              <div>
+                <div style={{
+                  display: 'flex', flexWrap: 'wrap', flexDirection: 'row', marginTop: '10px'
+                }}>
+                  <Typography variant="h5" align="center" color="text.secondary" paragraph>
+                    Select Workflow
+                  </Typography>
+                </div>
+                <div style={{
+                  display: 'flex', flexWrap: 'wrap', flexDirection: 'row', marginTop: '10px'
+                }}>
+                  <List
+                    sx={{
+                      overflow: 'auto',
+                      maxHeight: 500,
+                    }}
+                  >
+                    {
+                      repoWorkflows.map((repoWorkflow, idx) => {
+                        return (
+                          <div key={idx}>
+                            <ListItem key={"service-" + idx} onClick={() => selectWorkflow(repoWorkflow)}>
+                              <ListItemButton>
+                                <ListItemIcon>
+                                  <Code />
+                                </ListItemIcon>
+                                <ListItemText
+                                  primary={repoWorkflow.path}
+                                  secondary={
+                                    <React.Fragment>
+                                      <Typography
+                                        sx={{
+                                          display: 'inline'
+                                        }}
+                                        component="span"
+                                        variant="body2"
+                                        color="text.primary"
+                                      >
+                                      </Typography>
+                                    </React.Fragment>
+                                  }
+                                />
+                              </ListItemButton>
+                            </ListItem>
+                            {idx != services.length - 1 &&
+                              <Divider variant="inset" component="li" />
                             }
-                          />
-                        </ListItemButton>
-                      </ListItem>
-                      {idx != services.length - 1 &&
-                        <Divider variant="inset" component="li" />
-                      }
-                    </div>
-                  )
-                })
-              }
-            </List>
+                          </div>
+                        )
+                      })
+                    }
+                  </List>
+                </div>
+              </div>
+            }
           </Paper>
           <Button variant="contained" sx={{
             float: 'left', marginTop: '10px'
