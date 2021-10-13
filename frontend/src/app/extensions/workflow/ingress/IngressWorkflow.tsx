@@ -3,7 +3,8 @@ import { Box, Stepper, Step, StepLabel, Button, Card, CardContent, Container, Di
 import { AppState, BaseDisplayState } from "../../../../models/types";
 import { useState } from 'react';
 import { styled } from '@mui/material/styles';
-import MonacoEditor, { MonacoEditorProps } from '@uiw/react-monacoeditor';
+// import MonacoEditor, { MonacoEditorProps } from '@uiw/react-monacoeditor';
+import Editor, { useMonaco } from '@monaco-editor/react';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import MuiAccordion, { AccordionProps } from '@mui/material/Accordion';
 import MuiAccordionSummary, { AccordionSummaryProps } from '@mui/material/AccordionSummary';
@@ -60,6 +61,7 @@ export default function IngressWorkflow(
     appState: AppState,
     setAppState: (appState: AppState) => void
   }) {
+  const monacoRef = React.useRef(null);
   const { appState, setAppState } = props;
   const [services, setServices] = useState<ServiceEntry[]>([]);
   const [selectedServices, setSelectedServices] = useState<ServiceEntry[]>([]);
@@ -109,18 +111,32 @@ export default function IngressWorkflow(
     setWorkflowStep(1);
   }
 
+  function handleEditorWillMount(monaco: any) {
+    // here is the monaco instance
+    // do something before editor is mounted
+    monaco.languages.typescript.javascriptDefaults.setEagerModelSync(true);
+  }
+
+  function handleEditorDidMount(editor: any, monaco: any) {
+    // here is another way to get monaco instance
+    // you can also store it in `useRef` for further usage
+    monacoRef.current = editor;
+    console.log("monacoRef:", monacoRef)
+  }
+
   const addRuleToDefinition = () => {
-    setIngressDefinition(ingressDefinition + rule);
+    monacoRef
+    // setIngressDefinition(ingressDefinition + rule);
   }
 
   const addPathToDefinition = () => {
-    setIngressDefinition(ingressDefinition + path);
+    // setIngressDefinition(ingressDefinition + path);
   }
 
   function saveIngressYaml() {
     setIngressDefinition(ingressDefinition + "");
     setWorkflowStep(workflowStep + 1);
-    console.log(ingressDefinition);
+    // console.log(ingressDefinition);
   }
 
   return (
@@ -223,20 +239,19 @@ export default function IngressWorkflow(
                         <div style={{
                           display: 'flex', flexDirection: 'row'
                         }}>
-                          <MonacoEditor
+                          <Editor
                             language="yaml"
                             value={ingressDefinition}
                             options={{
                               theme: 'vs-dark',
                             }}
-                            style={{
-                              width: '100%',
-                              minHeight: '500px'
-                            }}
+                            width="100%"
+                            height="50vh"
                             onChange={(s, e) => {
                               console.log(e);
-                              ingressDefinition = s;
                             }}
+                            beforeMount={handleEditorWillMount}
+                            onMount={handleEditorDidMount}
                           />
                         </div>
                         <div>
