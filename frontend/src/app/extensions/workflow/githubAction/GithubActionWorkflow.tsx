@@ -37,6 +37,7 @@ import { Code, Help } from "@mui/icons-material";
 import { isConstructorDeclaration } from "typescript";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { coy as prismTheme } from "react-syntax-highlighter/dist/esm/styles/prism";
+/* eslint @typescript-eslint/no-var-requires: "off" */
 const rrl = require("react-reorderable-list"); // workaround because no types
 const { ReOrderableItem, ReOrderableList } = rrl;
 
@@ -108,7 +109,7 @@ export default function GithubActionWorkflow(props: {
 
   const getAction = (url: string) => {
     getWorkflow();
-    let parts = url.split("/");
+    const parts = url.split("/");
     const repoName = parts?.pop() || parts?.pop(); // handles trailing slash
     const repoOwner = parts?.pop();
 
@@ -174,7 +175,7 @@ export default function GithubActionWorkflow(props: {
       }
     }
 
-    let parts = actionUrl?.split("/");
+    const parts = actionUrl?.split("/");
     const repoName = parts?.pop() || parts?.pop(); // handles trailing slash
     const repoOwner = parts?.pop();
     let newStep = `${" ".repeat(spaces)}- uses: ${repoOwner}/${repoName}`;
@@ -234,7 +235,7 @@ export default function GithubActionWorkflow(props: {
             >
               {workflows.map((workflow, idx) => {
                 return (
-                  <div>
+                  <div key={idx}>
                     <ListItem
                       key={"workflow-" + idx}
                       onClick={() => {
@@ -289,8 +290,8 @@ export default function GithubActionWorkflow(props: {
           <Paper sx={{ display: "flex", flexDirection: "column" }}>
             <Divider />
             <List>
-              {defaultActionUrls.map((url) => (
-                <ListItem button onClick={() => getAction(url)}>
+              {defaultActionUrls.map((url, i) => (
+                <ListItem key={i} button onClick={() => getAction(url)}>
                   <ListItemText style={{ color: "blue" }} primary={url} />
                 </ListItem>
               ))}

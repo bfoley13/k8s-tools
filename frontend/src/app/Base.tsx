@@ -240,6 +240,13 @@ export default function Base() {
                 setAppState={setAppState}
               />
             )}
+            {appState.baseDisplayState ==
+              BaseDisplayState.GITHUB_ACTION_DISPLAY && (
+              <GithubActionWorkflow
+                appState={appState}
+                setAppState={setAppState}
+              />
+            )}
           </Container>
         </Box>
       </Box>
