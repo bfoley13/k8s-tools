@@ -16,7 +16,7 @@ import { Code, GitHub } from '@mui/icons-material';
 import { serviceMeshAction } from './yaml';
 import YAML from 'yaml';
 
-const ingressSteps = ["Select Workflow", "Add Ingress Deployment"]
+const ingressSteps = ["Select Workflow", "Add Service Mesh Deployment"]
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion disableGutters elevation={0} square {...props} />
