@@ -32,3 +32,11 @@ type CreateIngressPullRequest struct {
 	WorkflowDefinition string `json:"workflowDefinition"`
 	WorkflowFile       string `json:"workflowFile"`
 }
+
+type UpdateWorkflowPullRequest struct {
+	RepoOwner          string `json:"repoOwner"`
+	RepoName           string `json:"repoName"`
+	RepoBranch         string `json:"repoBranch"`
+	WorkflowDefinition string `json:"workflowDefinition"`
+	WorkflowFile       string `json:"workflowFile"`
+}

@@ -314,6 +314,88 @@ func (api *K8sService) GetChartDirectories(w http.ResponseWriter, r *http.Reques
 	w.WriteHeader(http.StatusOK)
 }
 
+func (api *K8sService) UpdateWorkflowPullRequest(w http.ResponseWriter, r *http.Request) {
+	log.Println("[UpdateWorkflowPullRequest] starting service call")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	ctx := context.Background()
+
+	log.Printf("[UpdateWorkflowPullRequest] request body: %v\n", r.Body)
+	requestDecoder := json.NewDecoder(r.Body)
+	defer func() {
+		if err := r.Body.Close(); err != nil {
+			api.WriteHTTPErrorResponse(w, 500, err)
+		}
+	}()
+
+	createPRRequest := &types.UpdateWorkflowPullRequest{}
+	err := requestDecoder.Decode(createPRRequest)
+	if err != nil {
+		log.Println("[CreateIngressPullRequest] failed to decode request body")
+		api.WriteHTTPErrorResponse(w, 400, err)
+		return
+	}
+	log.Printf("[CreateIngressPullRequest] Request: %+v\n", createPRRequest)
+
+	newBranchName := generateBranchName(charset, 5)
+
+	fmt.Println("[UpdateWorkflowPullRequest] Getting repo reference")
+	ref, err := api.GHClient.GetReference(ctx, createPRRequest.RepoOwner, createPRRequest.RepoName, newBranchName, createPRRequest.RepoBranch)
+	if err != nil || ref == nil {
+		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to make new commit ref"))
+		return
+	}
+
+	newWorkflowFileName := ""
+	if createPRRequest.WorkflowFile == "" || createPRRequest.WorkflowDefinition == "" {
+		api.WriteHTTPErrorResponse(w, 409, fmt.Errorf("missing workflow file paramter or workflow definition parameter"))
+		return
+	}
+
+	fmt.Println("[UpdateWorkflowPullRequest] Saving workflow definition locally")
+	newWorkflowFileName, err = api.LocalRepoService.SaveFile(createPRRequest.RepoOwner, createPRRequest.RepoName, createPRRequest.RepoBranch, createPRRequest.WorkflowDefinition, createPRRequest.WorkflowFile)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to save file: %s", err))
+		return
+	}
+
+	fmt.Println("[UpdateWorkflowPullRequest] Creating new commit tree")
+	sourceFile := fmt.Sprintf("%s:%s", newWorkflowFileName, createPRRequest.WorkflowFile)
+	tree, err := api.GHClient.GenerateCommitTree(ctx, ref, createPRRequest.RepoOwner, createPRRequest.RepoName, sourceFile)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to generate new commit tree: %s", err.Error()))
+		return
+	}
+
+	fmt.Println("[UpdateWorkflowPullRequest] Creating new commit")
+	_, err = api.GHClient.CreateCommit(ctx, ref, tree, createPRRequest.RepoOwner, createPRRequest.RepoName)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to create commit: %s", err.Error()))
+		return
+	}
+
+	fmt.Println("[UpdateWorkflowPullRequest] Generating pull request")
+	msg := "Updating Workflow"
+	pr, err := api.GHClient.CreatePullRequest(ctx, "Updating Workflow", createPRRequest.RepoOwner, createPRRequest.RepoName, createPRRequest.RepoBranch, msg, createPRRequest.RepoOwner, createPRRequest.RepoName, newBranchName)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to create pull request: %s", err.Error()))
+		return
+	}
+
+	resp := &types.CreatePullRequestResponse{
+		PullRequestURL: pr.GetHTMLURL(),
+	}
+
+	log.Println("[UpdateWorkflowPullRequest] Completed")
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
 func (api *K8sService) CreateIngressPullRequest(w http.ResponseWriter, r *http.Request) {
 	log.Println("[CreateIngressPullRequest] starting service call")
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
