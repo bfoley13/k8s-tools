@@ -96,6 +96,12 @@ export default function GithubActionWorkflow(props: {
     return !!unfulfilled && unfulfilled?.length == 0;
   };
 
+  const getNewYaml = (): string => {
+    return (
+      workflowFileSplit.metadata + "\n" + workflowFileSplit.steps.join("\n\n")
+    );
+  };
+
   React.useEffect(() => {
     ListWorkflows(
       {
@@ -464,7 +470,7 @@ export default function GithubActionWorkflow(props: {
           <Button
             style={{ marginTop: "20px", width: "100%" }}
             variant="contained"
-            onClick={() => console.log(workflowFileSplit)}
+            onClick={() => console.log(getNewYaml())}
           >
             Add
           </Button>
