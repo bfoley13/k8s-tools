@@ -135,12 +135,6 @@ export default function IngressWorkflow(
     setWorkflowStep(1);
   }
 
-  function handleEditorWillMount(monaco: any) {
-    // here is the monaco instance
-    // do something before editor is mounted
-    monaco.languages.typescript.javascriptDefaults.setEagerModelSync(true);
-  }
-
   function handleEditorDidMount(ed: editor.IStandaloneCodeEditor, m: any) {
     // here is another way to get monaco instance
     // you can also store it in `useRef` for further usage
@@ -316,14 +310,13 @@ export default function IngressWorkflow(
                             language="yaml"
                             value={ingressDefinition}
                             options={{
-                              theme: 'vs-dark',
+                              theme: 'hc-black',
                             }}
                             width="100%"
                             height="50vh"
                             onChange={(s, e) => {
                               console.log(e);
                             }}
-                            beforeMount={handleEditorWillMount}
                             onMount={handleEditorDidMount}
                           />
                         </div>
