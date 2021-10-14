@@ -63,6 +63,12 @@ export default function ExtensionsCard(
     })
   }
 
+  const selectServiceMeshIngress = () => {
+    setAppState({
+      ...appState, baseDisplayState: BaseDisplayState.SERVICEMESH_DISPLAY
+    })
+  }
+
   return (
     <Grid sx={{
       flexGrow: 1
@@ -144,7 +150,7 @@ export default function ExtensionsCard(
                 <Grid item key={idx}>
                   <Card sx={{
                     height: 200, width: 150
-                  }} onClick={selectIngress}>
+                  }} onClick={selectServiceMeshIngress}>
                     <CardActionArea sx={{
                       height: '100%'
                     }}>

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Branch, ChartEntry, CreateIngressPRRequest, ListBranchesRequest, ListChartEntryRequest, ListDirectoriesRequest, ListRepositoriesRequest, ListRepoWorkflowRequest, ListServicesRequest, Repository, RepoWorkflow, ServiceEntry, TreeEntry } from "../models/github";
+import { Branch, ChartEntry, CreateWorkflowPRRequest, CreateIngressPRRequest, ListBranchesRequest, ListChartEntryRequest, ListDirectoriesRequest, ListRepositoriesRequest, ListRepoWorkflowRequest, ListServicesRequest, Repository, RepoWorkflow, ServiceEntry, TreeEntry } from "../models/github";
 
 const baseURL = "http://localhost:8080";
 axios.defaults.baseURL = baseURL
@@ -162,4 +162,16 @@ export function CreateIngressPR(req: CreateIngressPRRequest, handleResponse: (pr
       console.log(resp)
       handleResponse(resp.data.pullRequestURL);
     })
+}
+
+export function CreateWorkflowPR(req: CreateWorkflowPRRequest, handleResponse: (prURL: string) => void) {
+    console.log("CreateWorkflowPR");
+    console.log(req);
+    axios.defaults.baseURL = baseURL
+    axios.post(baseURL + '/api/github/repository/pr/workflow', req)
+        .then((resp) => {
+            console.log("Got Response: ")
+            console.log(resp)
+            handleResponse(resp.data.pullRequestURL);
+        })
 }

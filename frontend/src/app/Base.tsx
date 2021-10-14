@@ -7,6 +7,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { AccountCircle, OpenInBrowser } from '@mui/icons-material';
 import ExtensionsCard from './extensions/ExtensionsCard';
 import IngressWorkflow from './extensions/workflow/ingress/IngressWorkflow';
+import ServiceMeshWorkflow from './extensions/workflow/serviceMesh/ServiceMeshWorkflow';
 import BaseDrawer from './BaseDrawer';
 import { AppState, BaseDisplayState, emptyAppState, HomeDisplay, } from '../models/types';
 import AppSelect from './repo_select/AppSelect';
@@ -217,6 +218,13 @@ export default function Base() {
                   setAppState={setAppState}
                 />
               )}
+            {appState.baseDisplayState == BaseDisplayState.SERVICEMESH_DISPLAY
+            && (
+                <ServiceMeshWorkflow
+                    appState={appState}
+                    setAppState={setAppState}
+                />
+            )}
           </Container>
         </Box>
       </Box>

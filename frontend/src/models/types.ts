@@ -6,7 +6,8 @@ export enum BaseDisplayState {
   BRANCH_SELECT,
   CHART_SELECT,
   EXTENSION_DISPLAY,
-  INGRESS_DISPLAY
+  INGRESS_DISPLAY,
+  SERVICEMESH_DISPLAY
 }
 
 export enum HomeDisplay {
