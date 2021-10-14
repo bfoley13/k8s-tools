@@ -15,6 +15,9 @@ import { CreateIngressPR, ListDirectories, ListRepositories, ListRepoWorkflows, 
 import { Code, GitHub } from '@mui/icons-material';
 import { baseYaml, rule, path, ingressWorkflow } from './yaml';
 import YAML from 'yaml';
+import Editor from '@monaco-editor/react'
+import { editor } from 'monaco-editor'
+import * as monaco from 'monaco-editor';
 
 const ingressSteps = ["Select Backing Service", "Define Rules", "Select Ingress Location", "Select Workflow", "Add Ingress Deployment", "Confirm"]
 
@@ -77,9 +80,10 @@ export default function IngressWorkflow(
   const [filename, setFilename] = useState<string>("");
   const [prURL, setPRURL] = useState<string>("");
   const [showWorkflowSelect, setShowWorkflowSelect] = useState<boolean>(false);
+  const editorRef = React.useRef<monaco.editor.IStandaloneCodeEditor>();
 
   // eslint-disable-next-line prefer-const
-  let [ingressDefinition, setIngressDefinition] = useState<string>(baseYaml);
+  const [ingressDefinition, setIngressDefinition] = useState<string>(baseYaml);
   let [workflowDefinition, setWorkflowDefinition] = useState<string>("");
 
   function createPR() {
@@ -131,18 +135,56 @@ export default function IngressWorkflow(
     setWorkflowStep(1);
   }
 
+  function handleEditorWillMount(monaco: any) {
+    // here is the monaco instance
+    // do something before editor is mounted
+    monaco.languages.typescript.javascriptDefaults.setEagerModelSync(true);
+  }
+
+  function handleEditorDidMount(ed: editor.IStandaloneCodeEditor, m: any) {
+    // here is another way to get monaco instance
+    // you can also store it in `useRef` for further usage
+    editorRef.current = ed
+    //editor.IEditOperationsBuilder()
+
+    console.log("monacoRef:", editorRef)
+  }
+
+  const appendToEditor = (text: string) => {
+    const numLines: number = editorRef.current?.getModel()?.getLineCount() || 0
+
+    const edit1: monaco.editor.IIdentifiedSingleEditOperation = {
+      range: {
+        startLineNumber: numLines - 1,
+        endLineNumber: numLines - 1,
+        startColumn: 0,
+        endColumn: 0
+      },
+      text: text
+    }
+
+    console.log("Executing edit")
+    console.log(edit1)
+
+    editorRef.current?.executeEdits('', [edit1])
+  }
+
   const addRuleToDefinition = () => {
-    setIngressDefinition(ingressDefinition + rule);
+    appendToEditor(rule)
+    // setIngressDefinition(ingressDefinition + rule);
   }
 
   const addPathToDefinition = () => {
-    setIngressDefinition(ingressDefinition + path);
+    appendToEditor(path);
   }
 
   function saveIngressYaml() {
-    setIngressDefinition(ingressDefinition + "");
+    let currentEditorModel: editor.ITextModel | null | undefined = editorRef.current?.getModel()
+    let currentIngressDef: string = currentEditorModel?.getLinesContent().join('\n') || ""
+
+    console.log(currentIngressDef);
+    setIngressDefinition(currentIngressDef);
     setWorkflowStep(workflowStep + 1);
-    console.log(ingressDefinition);
   }
 
   function saveWorkflowYaml() {
@@ -154,7 +196,7 @@ export default function IngressWorkflow(
   function selectWorkflow(workflow: RepoWorkflow) {
     let yamlObj = YAML.parse(workflow.workflowYaml);
     console.log(yamlObj);
-    console.log(yamlObj.jobs.aks.steps);
+    console.log(yamlObj.jobs?.aks?.steps);
     yamlObj.jobs.aks.steps.push(ingressWorkflow);
     let finalYaml = YAML.stringify(yamlObj);
     setSelectedWorkflow(workflow)
@@ -270,20 +312,19 @@ export default function IngressWorkflow(
                         <div style={{
                           display: 'flex', flexDirection: 'row'
                         }}>
-                          <MonacoEditor
+                          <Editor
                             language="yaml"
                             value={ingressDefinition}
                             options={{
                               theme: 'vs-dark',
                             }}
-                            style={{
-                              width: '100%',
-                              minHeight: '500px'
-                            }}
+                            width="100%"
+                            height="50vh"
                             onChange={(s, e) => {
                               console.log(e);
-                              ingressDefinition = s;
                             }}
+                            beforeMount={handleEditorWillMount}
+                            onMount={handleEditorDidMount}
                           />
                         </div>
                         <div>
