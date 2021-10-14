@@ -37,6 +37,8 @@ import { Code, Help } from "@mui/icons-material";
 import { isConstructorDeclaration } from "typescript";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { coy as prismTheme } from "react-syntax-highlighter/dist/esm/styles/prism";
+const rrl = require("react-reorderable-list"); // workaround because no types
+const { ReOrderableItem, ReOrderableList } = rrl;
 
 const githubActionSteps = [
   "Select Workflow",
@@ -61,6 +63,15 @@ export default function GithubActionWorkflow(props: {
   const [selectedWorkflow, setSelectedWorkflow] =
     React.useState<WorkflowEntry>();
   const [workflow, setWorkflow] = React.useState<Workflow>({ contents: "" });
+  const [workflowFileSplit, setWorkflowFileSplit] =
+    React.useState<WorkflowFileSplit>({ metadata: "", steps: [] });
+
+  const setSteps = (newSteps: string[]) => {
+    setWorkflowFileSplit({
+      metadata: workflowFileSplit.metadata,
+      steps: newSteps,
+    });
+  };
 
   const addActionField = (name: string, val: string) => {
     setActionFields(new Map(actionFields.set(name, val)));
@@ -118,7 +129,7 @@ export default function GithubActionWorkflow(props: {
     );
   };
 
-  const splitWorkflow = (): WorkflowFileSplit => {
+  const splitWorkflow = () => {
     // TODO: Add better error handling? What if no workflow? What if no steps?
 
     const split = workflow.contents.split(/(steps:\s?)/);
@@ -166,7 +177,9 @@ export default function GithubActionWorkflow(props: {
       newStep += `\n${" ".repeat(secondSpaces)}${key}: '${val}'`;
     });
 
-    return { metadata: split[0] + split[1], steps, newStep };
+    // append new step to steps
+    steps.push(newStep);
+    setWorkflowFileSplit({ metadata: split[0] + split[1], steps });
   };
 
   return (
@@ -394,12 +407,20 @@ export default function GithubActionWorkflow(props: {
           </Typography>
           <Paper>
             <SyntaxHighlighter wrapLongLines language="yaml" style={prismTheme}>
-              {splitWorkflow().metadata}
+              {workflowFileSplit.metadata}
             </SyntaxHighlighter>
           </Paper>
-          <List style={{ padding: 0, margin: 0 }}>
-            {splitWorkflow().steps.map((step) => (
-              <ListItem
+          <ReOrderableList
+            name="steps"
+            list={workflowFileSplit.steps}
+            component={List}
+            style={{ padding: 0, margin: 0 }}
+            onListUpdate={(newSteps: string[]) => setSteps(newSteps)}
+          >
+            {workflowFileSplit.steps.map((step, index) => (
+              <ReOrderableItem
+                component={ListItem}
+                key={index}
                 style={{
                   padding: 0,
                   margin: 0,
@@ -407,7 +428,9 @@ export default function GithubActionWorkflow(props: {
                   width: "100%",
                 }}
               >
-                <Paper style={{ margin: "0px", width: "100%" }}>
+                <Paper
+                  style={{ margin: "0px", width: "100%", cursor: "pointer" }}
+                >
                   <SyntaxHighlighter
                     wrapLongLines
                     language="yaml"
@@ -416,9 +439,17 @@ export default function GithubActionWorkflow(props: {
                     {step}
                   </SyntaxHighlighter>
                 </Paper>
-              </ListItem>
+              </ReOrderableItem>
             ))}
-          </List>
+          </ReOrderableList>
+
+          <Button
+            style={{ marginTop: "20px", width: "100%" }}
+            variant="contained"
+            onClick={() => console.log(workflowFileSplit)}
+          >
+            Add
+          </Button>
         </Container>
       )}
     </Container>

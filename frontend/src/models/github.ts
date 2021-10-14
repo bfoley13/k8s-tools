@@ -33,7 +33,6 @@ export interface Workflow {
 export interface WorkflowFileSplit {
   metadata: string;
   steps: string[];
-  newStep: string;
 }
 
 export interface GetActionEntryRequest {
