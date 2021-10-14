@@ -16,8 +16,8 @@ type BranchesResponse struct {
 	Data []*Branch `json:"data"`
 }
 
-type ChartResponse struct {
-	Data []*Chart `json:"data"`
+type ManifestOptionResponse struct {
+	Data []*ManifestOption `json:"data"`
 }
 
 type WorkflowResponse struct {
@@ -36,6 +36,10 @@ type ActionResponse struct {
 	Data *Action `json:"data"`
 }
 
+type ListWorkflowResponse struct {
+	Data []*WorkflowDefinition `json:"data"`
+}
+
 type Repository struct {
 	ID          int64  `json:"id"`
 	Name        string `json:"name"`
@@ -48,7 +52,7 @@ type Branch struct {
 	Name string `json:"name"`
 }
 
-type Chart struct {
+type ManifestOption struct {
 	SHA  string `json:"sha"`
 	Path string `json:"path"`
 }
@@ -65,6 +69,12 @@ type Service struct {
 type TreeEntry struct {
 	SHA  string `json:"sha"`
 	Path string `json:"path"`
+}
+
+type WorkflowDefinition struct {
+	SHA  string `json:"sha"`
+	Path string `json:"path"`
+	WorkflowYaml string `json:"workflowYaml"`
 }
 
 type CreatePullRequestResponse struct {

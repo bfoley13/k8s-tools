@@ -78,9 +78,17 @@ export default function ExtensionsCard(props: {
       baseDisplayState: BaseDisplayState.GITHUB_ACTION_DISPLAY,
     });
   };
+  
+  const selectServiceMeshIngress = () => {
+    setAppState({
+      ...appState, baseDisplayState: BaseDisplayState.SERVICEMESH_DISPLAY
+    })
+  }
 
   return (
-    <Grid sx={{ flexGrow: 1 }} container spacing={2}>
+    <Grid sx={{
+      flexGrow: 1
+    }} container spacing={2}>
       <Typography
         variant="h5"
         align="center"
@@ -95,40 +103,46 @@ export default function ExtensionsCard(props: {
       </Typography>
       <Grid item xs={12}>
         <Grid container justifyContent="center" spacing={2}>
-          {ingressProviders.map((info, idx) => {
-            return (
-              <Grid item key={idx}>
-                <Card sx={{ height: 200, width: 150 }} onClick={selectIngress}>
-                  <CardActionArea sx={{ height: "100%" }}>
-                    <CardContent>
-                      <img
-                        src={info.logo}
-                        style={{
-                          width: "100%",
-                          padding: "4px",
-                          height: "118px",
-                          display: "block",
-                        }}
-                      />
-                      <Typography
-                        sx={{
-                          width: "100%",
-                          margin: "auto",
-                          display: "block",
-                          textAlign: "center",
-                        }}
-                        component="span"
-                        variant="body2"
-                        color="text.primary"
-                      >
-                        {info.text}
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
-              </Grid>
-            );
-          })}
+          {
+            ingressProviders.map((info, idx) => {
+              return (
+                <Grid item key={idx}>
+                  <Card sx={{
+                    height: 200, width: 150
+                  }} onClick={selectIngress}>
+                    <CardActionArea sx={{
+                      height: '100%'
+                    }}>
+                      <CardContent>
+                        <img
+                          src={info.logo}
+                          style={{
+                            width: '100%',
+                            padding: '4px',
+                            height: '118px',
+                            display: 'block',
+                          }}
+                        />
+                        <Typography
+                          sx={{
+                            width: '100%',
+                            margin: 'auto',
+                            display: 'block',
+                            textAlign: 'center',
+                          }}
+                          component="span"
+                          variant="body2"
+                          color="text.primary"
+                        >
+                          {info.text}
+                        </Typography>
+                      </CardContent>
+                    </CardActionArea>
+                  </Card>
+                </Grid>
+              );
+            })
+          }
         </Grid>
       </Grid>
       <Typography
@@ -146,86 +160,46 @@ export default function ExtensionsCard(props: {
       </Typography>
       <Grid item xs={12}>
         <Grid container justifyContent="center" spacing={2}>
-          {serviceMeshProviders.map((info, idx) => {
-            return (
-              <Grid item key={idx}>
-                <Card sx={{ height: 200, width: 150 }} onClick={selectIngress}>
-                  <CardActionArea sx={{ height: "100%" }}>
-                    <CardContent>
-                      <img
-                        src={info.logo}
-                        style={{
-                          width: "100%",
-                          padding: "4px",
-                          height: "118px",
-                          display: "block",
-                        }}
-                      />
-                      <Typography
-                        sx={{
-                          width: "100%",
-                          margin: "auto",
-                          display: "block",
-                          textAlign: "center",
-                        }}
-                        component="span"
-                        variant="body2"
-                        color="text.primary"
-                      >
-                        {info.text}
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
-              </Grid>
-            );
-          })}
-        </Grid>
-      </Grid>
-      <Typography
-        variant="h5"
-        align="center"
-        color="text.secondary"
-        sx={{
-          width: "100%",
-          margin: "auto",
-          mt: "30px",
-        }}
-        paragraph
-      >
-        Add a Github Action
-      </Typography>
-      <Grid item xs={12}>
-        <Grid container justifyContent="center">
-          <Grid item>
-            <Card sx={{ height: 200, width: 150 }} onClick={selectGithubAction}>
-              <CardActionArea sx={{ height: "100%" }}>
-                <CardContent>
-                  <img
-                    src={githubAction.logo}
-                    style={{
-                      padding: "4px",
-                      height: "118px",
-                      display: "block",
-                    }}
-                  />
-                  <Typography
-                    sx={{
-                      width: "100%",
-                      margin: "auto",
-                      display: "block",
-                      textAlign: "center",
-                    }}
-                    component="span"
-                    variant="body2"
-                    color="text.primary"
-                  >
-                    {githubAction.text}
-                  </Typography>
-                </CardContent>
-              </CardActionArea>
-            </Card>
-          </Grid>
+          {
+            serviceMeshProviders.map((info, idx) => {
+              return (
+                <Grid item key={idx}>
+                  <Card sx={{
+                    height: 200, width: 150
+                  }} onClick={selectServiceMeshIngress}>
+                    <CardActionArea sx={{
+                      height: '100%'
+                    }}>
+                      <CardContent>
+                        <img
+                          src={info.logo}
+                          style={{
+                            width: '100%',
+                            padding: '4px',
+                            height: '118px',
+                            display: 'block',
+                          }}
+                        />
+                        <Typography
+                          sx={{
+                            width: '100%',
+                            margin: 'auto',
+                            display: 'block',
+                            textAlign: 'center',
+                          }}
+                          component="span"
+                          variant="body2"
+                          color="text.primary"
+                        >
+                          {info.text}
+                        </Typography>
+                      </CardContent>
+                    </CardActionArea>
+                  </Card>
+                </Grid>
+              );
+            })
+          }
         </Grid>
       </Grid>
     </Grid>

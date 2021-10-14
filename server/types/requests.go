@@ -23,12 +23,22 @@ type ServiceRequest struct {
 }
 
 type CreateIngressPullRequest struct {
-	RepoOwner         string `json:"repoOwner"`
-	RepoName          string `json:"repoName"`
-	RepoBranch        string `json:"repoBranch"`
-	IngressDefinition string `json:"ingressDefinition"`
-	IngressDirectory  string `json:"ingressDirectory"`
-	IngressFilename   string `json:"ingressFilename"`
+	RepoOwner          string `json:"repoOwner"`
+	RepoName           string `json:"repoName"`
+	RepoBranch         string `json:"repoBranch"`
+	IngressDefinition  string `json:"ingressDefinition"`
+	IngressDirectory   string `json:"ingressDirectory"`
+	IngressFilename    string `json:"ingressFilename"`
+	WorkflowDefinition string `json:"workflowDefinition"`
+	WorkflowFile       string `json:"workflowFile"`
+}
+
+type UpdateWorkflowPullRequest struct {
+	RepoOwner          string `json:"repoOwner"`
+	RepoName           string `json:"repoName"`
+	RepoBranch         string `json:"repoBranch"`
+	WorkflowDefinition string `json:"workflowDefinition"`
+	WorkflowFile       string `json:"workflowFile"`
 }
 
 type ActionRequest struct {

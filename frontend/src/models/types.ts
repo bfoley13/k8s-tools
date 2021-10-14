@@ -8,6 +8,7 @@ export enum BaseDisplayState {
   EXTENSION_DISPLAY,
   INGRESS_DISPLAY,
   GITHUB_ACTION_DISPLAY,
+  SERVICEMESH_DISPLAY
 }
 
 export enum HomeDisplay {

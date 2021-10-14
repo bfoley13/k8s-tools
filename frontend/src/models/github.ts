@@ -56,7 +56,7 @@ export interface ListServicesRequest {
   repoOwner: string;
   repoName: string;
   repoBranch: string;
-  chartPath: string;
+  manifestOptionPath: string;
 }
 
 export interface ListDirectoriesRequest {
@@ -66,6 +66,12 @@ export interface ListDirectoriesRequest {
   chartPath: string;
 }
 
+export interface ListRepoWorkflowRequest {
+  repoOwner: string;
+  repoName: string;
+  branchSha: string;
+}
+
 export interface CreateIngressPRRequest {
   repoOwner: string;
   repoName: string;
@@ -73,6 +79,16 @@ export interface CreateIngressPRRequest {
   ingressDefinition: string;
   ingressDirectory: string;
   ingressFilename: string;
+  workflowDefinition: string;
+  workflowFile: string;
+}
+
+export interface CreateWorkflowPRRequest {
+  repoOwner: string;
+  repoName: string;
+  repoBranch: string;
+  workflowDefinition: string;
+  workflowFile: string;
 }
 
 export interface Repository {
@@ -104,4 +120,10 @@ export interface ServiceEntry {
 export interface TreeEntry {
   sha: string;
   path: string;
+}
+
+export interface RepoWorkflow {
+  workflowYaml: string;
+  path: string;
+  sha: string;
 }

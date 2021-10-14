@@ -46,7 +46,9 @@ export default function AppSelect(
   }, [selectedBranch]);
 
   const setSelectedRepo = (repo: Repository) => {
-    setAppState({...appState, repo: repo});
+    setAppState({
+      ...appState, repo: repo
+    });
     setSelectedRepository(repo);
     setSelectedBranch(undefined);
     setSelectedChart(undefined);
@@ -54,42 +56,70 @@ export default function AppSelect(
   }
 
   const setSelectedRepoBranch = (branch: Branch) => {
-    setAppState({...appState, branch: branch});
+    setAppState({
+      ...appState, branch: branch
+    });
     setSelectedBranch(branch);
     setSelectedChart(undefined);
   }
 
   const setSelectedRepoChart = (chart: ChartEntry) => {
-    setAppState({...appState, chart: chart});
+    setAppState({
+      ...appState, chart: chart
+    });
     setSelectedChart(chart);
   }
 
   const selectApp = () => {
-    setAppState({...appState, baseDisplayState: BaseDisplayState.EXTENSION_DISPLAY});
+    setAppState({
+      ...appState, baseDisplayState: BaseDisplayState.EXTENSION_DISPLAY
+    });
   }
 
   return (
-    <Container maxWidth="lg" sx={{display: 'flex', flexDirection:'column', height: '100%'}}>
-      <Paper sx={{display: 'flex', flexDirection:'column'}}>
-        <div style={{display: 'flex', flexDirection:'row', flex: 1, alignContent: 'center'}}>
-          <Typography variant="h5" align="center" color="text.secondary" paragraph sx={{flex: 1}}>
+    <Container maxWidth="lg" sx={{
+      display: 'flex', flexDirection:'column', height: '100%'
+    }}>
+      <Paper sx={{
+        display: 'flex', flexDirection:'column'
+      }}>
+        <div style={{
+          display: 'flex', flexDirection:'row', flex: 1, alignContent: 'center'
+        }}>
+          <Typography variant="h5" align="center" color="text.secondary" paragraph sx={{
+            flex: 1
+          }}>
             Select GitHub User:
           </Typography>
         </div>
         <Divider />
-        <div style={{display: 'flex', flexDirection:'row', flex: 1, alignContent: 'center', margin: '20px', padding: '10px'}}>
-          <TextField sx={{margin: '4px', flex: 1}} id="standard-basic" label="GitHub Username" variant="standard" value={githubUsername} onChange={(e) => setGithubUsername(e.target.value)} />
-          <Button variant="contained" onClick={() => setAppState({...appState, ghUserName: githubUsername})}>Save</Button>
+        <div style={{
+          display: 'flex', flexDirection:'row', flex: 1, alignContent: 'center', margin: '20px', padding: '10px'
+        }}>
+          <TextField sx={{
+            margin: '4px', flex: 1
+          }} id="standard-basic" label="GitHub Username" variant="standard" value={githubUsername} onChange={(e) => setGithubUsername(e.target.value)} />
+          <Button variant="contained" onClick={() => setAppState({
+            ...appState, ghUserName: githubUsername
+          })}>Save</Button>
         </div>
         <Divider />
-        <div style={{display: 'flex', flexDirection:'row', flex: 1, alignContent: 'center', marginTop: '10px'}}>
-          <Typography variant="h5" align="center" color="text.secondary" paragraph sx={{flex: 1}}>
+        <div style={{
+          display: 'flex', flexDirection:'row', flex: 1, alignContent: 'center', marginTop: '10px'
+        }}>
+          <Typography variant="h5" align="center" color="text.secondary" paragraph sx={{
+            flex: 1
+          }}>
             Select Your App:
           </Typography>
         </div>
         <Divider />
-        <div style={{display: 'flex', flexDirection:'row', flex: 1, padding: '4px'}}>
-          <div style={{display: 'flex', flexDirection:'column', flex: 1, padding: '4px'}}>
+        <div style={{
+          display: 'flex', flexDirection:'row', flex: 1, padding: '4px'
+        }}>
+          <div style={{
+            display: 'flex', flexDirection:'column', flex: 1, padding: '4px'
+          }}>
             <Typography variant="h6" align="center" color="text.secondary" paragraph>
               Repository:
             </Typography>
@@ -102,27 +132,29 @@ export default function AppSelect(
               {
                 repositories.map((repo, idx) => {
                   return (
-                    <div>
-                    <ListItem onClick={() => setSelectedRepo(repo)} key={"repo-" + idx}>
-                      <ListItemButton selected={selectedRepository?.name == repo.name}>
-                        <ListItemIcon>
-                          <GitHub />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={repo.name}
-                        />
-                      </ListItemButton>
-                    </ListItem>
-                    {idx != repositories.length - 1 &&
+                    <div key={idx}>
+                      <ListItem onClick={() => setSelectedRepo(repo)} key={"repo-" + idx}>
+                        <ListItemButton selected={selectedRepository?.name == repo.name}>
+                          <ListItemIcon>
+                            <GitHub />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={repo.name}
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                      {idx != repositories.length - 1 &&
                       <Divider variant="inset" component="li" />
-                    }
+                      }
                     </div>
                   )
                 })
               }
             </List>
           </div>
-          <div style={{display: 'flex', flexDirection:'column', flex: 1, padding: '4px'}}>
+          <div style={{
+            display: 'flex', flexDirection:'column', flex: 1, padding: '4px'
+          }}>
             <Typography variant="h6" align="center" color="text.secondary" paragraph>
               Branch:
             </Typography>
@@ -130,12 +162,12 @@ export default function AppSelect(
               {
                 branches.map((branch, idx) => {
                   return (
-                    <div>
+                    <div key={idx}>
                       <ListItem onClick={() => setSelectedRepoBranch(branch)} key={"branch-" + idx}>
                         <ListItemButton selected={selectedBranch?.name == branch.name}>
-                        <ListItemIcon>
-                          <AccountTree />
-                        </ListItemIcon>
+                          <ListItemIcon>
+                            <AccountTree />
+                          </ListItemIcon>
                           <ListItemText
                             primary={branch.name}
                           />
@@ -150,7 +182,9 @@ export default function AppSelect(
               }
             </List>
           </div>
-          <div style={{display: 'flex', flexDirection:'column', flex: 1, padding: '4px'}}>
+          <div style={{
+            display: 'flex', flexDirection:'column', flex: 1, padding: '4px'
+          }}>
             <Typography variant="h6" align="center" color="text.secondary" paragraph>
               Chart:
             </Typography>
@@ -158,7 +192,7 @@ export default function AppSelect(
               {
                 chartPaths.map((chart, idx) => {
                   return (
-                    <div>
+                    <div key={idx}>
                       <ListItem key={"chart-" + idx} onClick={() => setSelectedRepoChart(chart)}>
                         <ListItemButton selected={selectedChart?.path == chart.path}>
                           <ListItemIcon>
@@ -180,7 +214,9 @@ export default function AppSelect(
           </div>
         </div>
       </Paper>
-      <Button variant="contained" sx={{float: 'right', marginTop: '10px'}} disabled={selectedChart == undefined} onClick={() => selectApp()}>
+      <Button variant="contained" sx={{
+        float: 'right', marginTop: '10px'
+      }} disabled={selectedChart == undefined} onClick={() => selectApp()}>
           Select App
       </Button>
     </Container>

@@ -6,20 +6,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"k8s-tooling-adapter/server/types"
 
 	"gopkg.in/yaml.v2"
+	"github.com/google/go-github/v38/github"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
-func (api *K8sService) ListRepoCharts(w http.ResponseWriter, r *http.Request) {
-	log.Println("[ListRepoCharts] starting service call")
+const (
+	charset = "abcdefghijklmnopqrstuvwxyz"
+)
+
+func (api *K8sService) ListManifestOption(w http.ResponseWriter, r *http.Request) {
+	log.Println("[ListManifestOption] starting service call")
 	ctx := context.Background()
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -43,7 +50,7 @@ func (api *K8sService) ListRepoCharts(w http.ResponseWriter, r *http.Request) {
 	repoOwner := params["repoOwner"][0]
 	repoName := params["repoName"][0]
 	repoBranch := params["repoBranch"][0]
-	log.Printf("[ListRepoCharts] Req Repo: %s/%s/%s\n", repoOwner, repoName, repoBranch)
+	log.Printf("[ListManifestOption] Req Repo: %s/%s/%s\n", repoOwner, repoName, repoBranch)
 
 	tree, err := api.GHClient.GetBranchTree(ctx, repoOwner, repoName, repoBranch)
 	if err != nil {
@@ -51,24 +58,31 @@ func (api *K8sService) ListRepoCharts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chartEntries := make([]*types.Chart, 0)
+	manifestOptions := make([]*types.ManifestOption, 0)
 	for _, entry := range tree.Entries {
 		if entry == nil || entry.Path == nil {
 			continue
 		}
 
 		if strings.Contains(*entry.Path, "Chart.yaml") {
-			chartEntries = append(chartEntries, &types.Chart{
+			manifestOptions = append(manifestOptions, &types.ManifestOption{
+				SHA:  *entry.SHA,
+				Path: *entry.Path,
+			})
+		}
+
+		if strings.Contains(*entry.Path, "manifests") && *entry.Type == "tree" {
+			manifestOptions = append(manifestOptions, &types.ManifestOption{
 				SHA:  *entry.SHA,
 				Path: *entry.Path,
 			})
 		}
 	}
 
-	log.Println("[ListRepoCharts] Found Charts: ", len(chartEntries))
+	log.Println("[ListManifestOption] Found Manifest Options: ", len(manifestOptions))
 
-	resp := types.ChartResponse{
-		Data: chartEntries,
+	resp := types.ManifestOptionResponse{
+		Data: manifestOptions,
 	}
 
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
@@ -76,7 +90,7 @@ func (api *K8sService) ListRepoCharts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("[ListRepoCharts] completed")
+	log.Println("[ListManifestOption] completed")
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -335,32 +349,34 @@ func (api *K8sService) ListServices(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, ok := params["chartPath"]; !ok {
-		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid chartPath parameter"))
+	if _, ok := params["manifestOptionPath"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid manifestOptionPath parameter"))
 		return
 	}
 
 	repoOwner := params["repoOwner"][0]
 	repoName := params["repoName"][0]
 	repoBranch := params["repoBranch"][0]
-	chartPath := params["chartPath"][0]
+	manifestOptionPath := params["manifestOptionPath"][0]
 
-	log.Println("[ListServices] Chart Path: ", chartPath)
-	err := api.LocalRepoService.CloneRepositoryLocaly(api.accessToken, repoOwner, repoName, repoBranch)
-	if err != nil {
-		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("error cloning repo: %s", err.Error()))
-		return
+	manifestYamls := []string{}
+	var err error
+	if strings.Contains(manifestOptionPath, "Chart.yaml") {
+		log.Println("[ListServices] Using Chart.yaml")
+		manifestYamls, err = api.getHelmManifestYamls(repoName, repoOwner, repoBranch, manifestOptionPath)
+		if err != nil {
+			api.WriteHTTPErrorResponse(w, 500, err)
+			return
+		}
+	} else if strings.Contains(manifestOptionPath, "manifests") {
+		log.Println("[ListServices] Using manifests")
+		manifestYamls, err = api.getDefinedManifestYamls(context.Background(), repoName, repoOwner, repoBranch)
+		if err != nil {
+			api.WriteHTTPErrorResponse(w, 500, err)
+			return
+		}
 	}
-	log.Println("[ListServices] Cloned repo successfully")
 
-	helmManifest, err := api.LocalRepoService.GenerateManifestWithHelm(repoOwner, repoName, repoBranch, strings.Replace(chartPath, "/Chart.yaml", "/", -1))
-	if err != nil {
-		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("error generating maifest: %s", err.Error()))
-		return
-	}
-	log.Println("[ListServices] Manifest generated successfully")
-
-	manifestYamls := strings.Split(helmManifest, "---")
 	decode := scheme.Codecs.UniversalDeserializer().Decode
 	services := make([]*types.Service, 0)
 
@@ -398,6 +414,77 @@ func (api *K8sService) ListServices(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Println("[ListServices] completed")
+	w.WriteHeader(http.StatusOK)
+}
+
+func (api *K8sService) ListRepositoryWorkflows(w http.ResponseWriter, r *http.Request) {
+	log.Println("[ListRepositoryWorkflows] starting service call")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	ctx := context.Background()
+
+	params := r.URL.Query()
+	if _, ok := params["repoOwner"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid repoOwner parameter"))
+		return
+	}
+
+	if _, ok := params["repoName"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid repoName parameter"))
+		return
+	}
+
+	if _, ok := params["branchSha"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid branchSha parameter"))
+		return
+	}
+
+	repoOwner := params["repoOwner"][0]
+	repoName := params["repoName"][0]
+	branchSha := params["branchSha"][0]
+
+	tree, err := api.GHClient.GetBranchTree(ctx, repoOwner, repoName, branchSha)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("failed to get branch tree: %s", err.Error()))
+		return
+	}
+
+	workflowEntries := []*types.WorkflowDefinition{}
+	for _, entry := range tree.Entries {
+		if entry == nil || entry.Path == nil {
+			continue
+		}
+
+		log.Println("Path: ", *entry.Path)
+
+		if strings.Contains(*entry.Path, ".github/") && (strings.Contains(*entry.Path, ".yaml") || strings.Contains(*entry.Path, ".yml")) && *entry.Type == "blob" {
+			log.Println("Using Path: ", *entry.Path)
+			blob, err := api.GHClient.GetBlob(ctx, repoOwner, repoName, *entry.SHA)
+			if err != nil {
+				api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to get blog: %s", err.Error()))
+				return
+			}
+
+			yamlString, err := base64.StdEncoding.DecodeString(*blob.Content)
+			if err != nil {
+				log.Println("failed to decode yaml: ", *entry.Path)
+				continue
+			}
+
+			workflowEntries = append(workflowEntries, &types.WorkflowDefinition{
+				SHA:          *entry.SHA,
+				Path:         *entry.Path,
+				WorkflowYaml: string(yamlString),
+			})
+		}
+	}
+
+	log.Println("[ListRepositoryWorkflows] Completed")
+	if err := json.NewEncoder(w).Encode(types.ListWorkflowResponse{Data: workflowEntries}); err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -464,6 +551,88 @@ func (api *K8sService) GetChartDirectories(w http.ResponseWriter, r *http.Reques
 	w.WriteHeader(http.StatusOK)
 }
 
+func (api *K8sService) UpdateWorkflowPullRequest(w http.ResponseWriter, r *http.Request) {
+	log.Println("[UpdateWorkflowPullRequest] starting service call")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	ctx := context.Background()
+
+	log.Printf("[UpdateWorkflowPullRequest] request body: %v\n", r.Body)
+	requestDecoder := json.NewDecoder(r.Body)
+	defer func() {
+		if err := r.Body.Close(); err != nil {
+			api.WriteHTTPErrorResponse(w, 500, err)
+		}
+	}()
+
+	createPRRequest := &types.UpdateWorkflowPullRequest{}
+	err := requestDecoder.Decode(createPRRequest)
+	if err != nil {
+		log.Println("[CreateIngressPullRequest] failed to decode request body")
+		api.WriteHTTPErrorResponse(w, 400, err)
+		return
+	}
+	log.Printf("[CreateIngressPullRequest] Request: %+v\n", createPRRequest)
+
+	newBranchName := generateBranchName(charset, 5)
+
+	fmt.Println("[UpdateWorkflowPullRequest] Getting repo reference")
+	ref, err := api.GHClient.GetReference(ctx, createPRRequest.RepoOwner, createPRRequest.RepoName, newBranchName, createPRRequest.RepoBranch)
+	if err != nil || ref == nil {
+		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to make new commit ref"))
+		return
+	}
+
+	newWorkflowFileName := ""
+	if createPRRequest.WorkflowFile == "" || createPRRequest.WorkflowDefinition == "" {
+		api.WriteHTTPErrorResponse(w, 409, fmt.Errorf("missing workflow file paramter or workflow definition parameter"))
+		return
+	}
+
+	fmt.Println("[UpdateWorkflowPullRequest] Saving workflow definition locally")
+	newWorkflowFileName, err = api.LocalRepoService.SaveFile(createPRRequest.RepoOwner, createPRRequest.RepoName, createPRRequest.RepoBranch, createPRRequest.WorkflowDefinition, createPRRequest.WorkflowFile)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to save file: %s", err))
+		return
+	}
+
+	fmt.Println("[UpdateWorkflowPullRequest] Creating new commit tree")
+	sourceFile := fmt.Sprintf("%s:%s", newWorkflowFileName, createPRRequest.WorkflowFile)
+	tree, err := api.GHClient.GenerateCommitTree(ctx, ref, createPRRequest.RepoOwner, createPRRequest.RepoName, sourceFile)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to generate new commit tree: %s", err.Error()))
+		return
+	}
+
+	fmt.Println("[UpdateWorkflowPullRequest] Creating new commit")
+	_, err = api.GHClient.CreateCommit(ctx, ref, tree, createPRRequest.RepoOwner, createPRRequest.RepoName)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to create commit: %s", err.Error()))
+		return
+	}
+
+	fmt.Println("[UpdateWorkflowPullRequest] Generating pull request")
+	msg := "Updating Workflow"
+	pr, err := api.GHClient.CreatePullRequest(ctx, "Updating Workflow", createPRRequest.RepoOwner, createPRRequest.RepoName, createPRRequest.RepoBranch, msg, createPRRequest.RepoOwner, createPRRequest.RepoName, newBranchName)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to create pull request: %s", err.Error()))
+		return
+	}
+
+	resp := &types.CreatePullRequestResponse{
+		PullRequestURL: pr.GetHTMLURL(),
+	}
+
+	log.Println("[UpdateWorkflowPullRequest] Completed")
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
 func (api *K8sService) CreateIngressPullRequest(w http.ResponseWriter, r *http.Request) {
 	log.Println("[CreateIngressPullRequest] starting service call")
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -489,7 +658,7 @@ func (api *K8sService) CreateIngressPullRequest(w http.ResponseWriter, r *http.R
 	}
 	log.Printf("[CreateIngressPullRequest] Request: %+v\n", createPRRequest)
 
-	newBranchName := "bot-test-branch"
+	newBranchName := generateBranchName(charset, 5)
 
 	fmt.Println("[CreateIngressPullRequest] Getting repo reference")
 	ref, err := api.GHClient.GetReference(ctx, createPRRequest.RepoOwner, createPRRequest.RepoName, newBranchName, createPRRequest.RepoBranch)
@@ -505,8 +674,21 @@ func (api *K8sService) CreateIngressPullRequest(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	newWorkflowFileName := ""
+	if createPRRequest.WorkflowFile != "" {
+		fmt.Println("[CreateIngressPullRequest] Saving workflow definition locally")
+		newWorkflowFileName, err = api.LocalRepoService.SaveFile(createPRRequest.RepoOwner, createPRRequest.RepoName, createPRRequest.RepoBranch, createPRRequest.WorkflowDefinition, createPRRequest.WorkflowFile)
+		if err != nil {
+			api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to save file: %s", err))
+			return
+		}
+	}
+
 	fmt.Println("[CreateIngressPullRequest] Creating new commit tree")
 	sourceFile := fmt.Sprintf("%s:%s", newFileName, createPRRequest.IngressDirectory+"/"+createPRRequest.IngressFilename)
+	if newWorkflowFileName != "" {
+		sourceFile = fmt.Sprintf("%s,%s:%s", sourceFile, newWorkflowFileName, createPRRequest.WorkflowFile)
+	}
 	tree, err := api.GHClient.GenerateCommitTree(ctx, ref, createPRRequest.RepoOwner, createPRRequest.RepoName, sourceFile)
 	if err != nil {
 		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to generate new commit tree: %s", err.Error()))
@@ -521,7 +703,11 @@ func (api *K8sService) CreateIngressPullRequest(w http.ResponseWriter, r *http.R
 	}
 
 	fmt.Println("[CreateIngressPullRequest] Generating pull request")
-	pr, err := api.GHClient.CreatePullRequest(ctx, "Ingress Addition", createPRRequest.RepoOwner, createPRRequest.RepoName, createPRRequest.RepoBranch, "Adding ingress definition", createPRRequest.RepoOwner, createPRRequest.RepoName, newBranchName)
+	msg := "Adding ingress definition"
+	if newWorkflowFileName != "" {
+		msg = "Adding ingress definition and deployment to workflow"
+	}
+	pr, err := api.GHClient.CreatePullRequest(ctx, "Ingress Addition", createPRRequest.RepoOwner, createPRRequest.RepoName, createPRRequest.RepoBranch, msg, createPRRequest.RepoOwner, createPRRequest.RepoName, newBranchName)
 	if err != nil {
 		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to create pull request: %s", err.Error()))
 		return
@@ -540,72 +726,75 @@ func (api *K8sService) CreateIngressPullRequest(w http.ResponseWriter, r *http.R
 
 }
 
-func (api *K8sService) TestPut(w http.ResponseWriter, r *http.Request) {
-	log.Println("[TestPut] starting service call")
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	ctx := context.Background()
-
-	repoOwner := "bfoley13"
-	repoName := "hello-kubernetes"
-	repoBranch := "main"
-	newBranchName := "bot-test-branch"
-	// ingressSourceFileString := "ingress.yaml:hello-kubernetes/deploy/helm/hello-kubernetes/templates/ingress.yaml"
-	ingressYaml := `apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-	name: <INGRESS_NAME>
-spec:
-	rules:
-	- host: <HOST_URL>
-		http:
-			paths:
-			- path: <URL_PATH>
-				pathType: <PATH_TYPE>
-				backend:
-					service:
-						name: <SERVICE_NAME>
-						port:
-							number: <SERVICE_PORT>
-`
-
-	log.Printf("%s/%s/%s/%s/%s\n", repoOwner, repoName, repoBranch, newBranchName, ingressYaml)
-	ref, err := api.GHClient.GetReference(ctx, repoOwner, repoName, newBranchName, repoBranch)
-	if err != nil || ref == nil {
-		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to make new commit ref"))
-		return
-	}
-
-	newFileName, err := api.LocalRepoService.SaveFile(repoOwner, repoName, repoBranch, ingressYaml, "hello-service-ingress.yaml")
+func (api *K8sService) getHelmManifestYamls(repoName, repoOwner, repoBranch, chartPath string) ([]string, error) {
+	err := api.LocalRepoService.CloneRepositoryLocaly(api.accessToken, repoOwner, repoName, repoBranch)
 	if err != nil {
-		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to save file: %s", err))
-		return
+		return nil, fmt.Errorf("error cloning repo: %s", err.Error())
 	}
+	log.Println("[ListServices] Cloned repo successfully")
 
-	sourceFile := fmt.Sprintf("%s:%s", newFileName, "deploy/helm/hello-kubernetes/templates/ingress.yaml")
-
-	tree, err := api.GHClient.GenerateCommitTree(ctx, ref, repoOwner, repoName, sourceFile)
+	helmManifest, err := api.LocalRepoService.GenerateManifestWithHelm(repoOwner, repoName, repoBranch, strings.Replace(chartPath, "/Chart.yaml", "/", -1))
 	if err != nil {
-		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to generate new commit tree: %s", err.Error()))
-		return
+		return nil, fmt.Errorf("error generating maifest: %s", err.Error())
 	}
+	log.Println("[ListServices] Manifest generated successfully")
 
-	_, err = api.GHClient.CreateCommit(ctx, ref, tree, repoOwner, repoName)
+	return strings.Split(helmManifest, "---"), nil
+}
+
+func (api *K8sService) getDefinedManifestYamls(ctx context.Context, repoName, repoOwner, repoBranch string) ([]string, error) {
+	err := api.LocalRepoService.CloneRepositoryLocaly(api.accessToken, repoOwner, repoName, repoBranch)
 	if err != nil {
-		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to create commit: %s", err.Error()))
-		return
+		return nil, fmt.Errorf("error cloning repo: %s", err.Error())
 	}
+	log.Println("[ListServices] Cloned repo successfully")
 
-	pr, err := api.GHClient.CreatePullRequest(ctx, "Ingress Addition", repoOwner, repoName, repoBranch, "Adding ingress definition", "bfoley13", repoName, newBranchName)
+	tree, err := api.GHClient.GetBranchTree(ctx, repoOwner, repoName, repoBranch)
 	if err != nil {
-		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to create pull request: %s", err.Error()))
-		return
+		return nil, fmt.Errorf("error getting repo branch: %s", err.Error())
 	}
 
-	log.Println("[TestPut] Completed")
-	if err := json.NewEncoder(w).Encode(pr.GetHTMLURL()); err != nil {
-		api.WriteHTTPErrorResponse(w, 500, err)
-		return
+	manifestYamlBlobs := make([]*github.TreeEntry, 0)
+	for _, entry := range tree.Entries {
+		if entry == nil || entry.Path == nil {
+			continue
+		}
+
+		if strings.Contains(*entry.Path, "manifests/") && strings.Contains(*entry.Path, ".yaml") && *entry.Type == "blob" {
+			manifestYamlBlobs = append(manifestYamlBlobs, entry)
+		}
 	}
-	w.WriteHeader(http.StatusOK)
+
+	yamlBlobs := []string{}
+	for _, treeEntry := range manifestYamlBlobs {
+		blob, err := api.GHClient.GetBlob(ctx, repoOwner, repoName, *treeEntry.SHA)
+		if err != nil {
+			return nil, fmt.Errorf("error fetching blob %s: %s", *treeEntry.Path, err.Error())
+		}
+
+		yamlString, err := base64.StdEncoding.DecodeString(*blob.Content)
+		if err != nil {
+			log.Println("failed to decode yaml: ", *treeEntry.Path)
+			continue
+		}
+		yamlBlobs = append(yamlBlobs, string(yamlString))
+	}
+
+	return yamlBlobs, nil
+}
+
+func generateBranchName(charSet string, codeLength int32) string {
+	code := "bot-test-branch-"
+	charSetLength := int32(len(charSet))
+	for i := int32(0); i < codeLength; i++ {
+		index := randomNumber(0, charSetLength)
+		code += string(charSet[index])
+	}
+
+	return code
+}
+
+func randomNumber(min, max int32) int32 {
+	rand.Seed(time.Now().UnixNano())
+	return min + int32(rand.Intn(int(max-min)))
 }
