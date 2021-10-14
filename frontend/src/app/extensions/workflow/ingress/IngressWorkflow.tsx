@@ -11,7 +11,7 @@ import MuiAccordion, { AccordionProps } from '@mui/material/Accordion';
 import MuiAccordionSummary, { AccordionSummaryProps } from '@mui/material/AccordionSummary';
 import MuiAccordionDetails from '@mui/material/AccordionDetails';
 import { Repository, RepoWorkflow, ServiceEntry, TreeEntry } from '../../../../models/github';
-import { CreateIngressPR, ListDirectories, ListRepositories, ListRepoWorkflows, ListServices } from '../../../../api/github';
+import { CreateIngressPR, ListDirectories, ListRepositories, ListRepoWorkflows, ListRepoWorkflowsWithFiles, ListServices } from '../../../../api/github';
 import { Code, GitHub } from '@mui/icons-material';
 import { baseYaml, rule, path, ingressWorkflow } from './yaml';
 import YAML from 'yaml';
@@ -123,7 +123,7 @@ export default function IngressWorkflow(
   }, [])
 
   React.useEffect(() => {
-    ListRepoWorkflows({
+    ListRepoWorkflowsWithFiles({
       repoOwner: appState.ghUserName,
       repoName: appState.repo.name,
       branchSha: appState.branch.sha
@@ -192,6 +192,8 @@ export default function IngressWorkflow(
     setWorkflowStep(workflowStep + 1);
     console.log(workflowDefinition);
   }
+
+
 
   function selectWorkflow(workflow: RepoWorkflow) {
     let yamlObj = YAML.parse(workflow.workflowYaml);

@@ -15,8 +15,8 @@ import (
 
 	"k8s-tooling-adapter/server/types"
 
-	"gopkg.in/yaml.v2"
 	"github.com/google/go-github/v38/github"
+	"gopkg.in/yaml.v2"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 )
@@ -119,7 +119,7 @@ func (api *K8sService) ListRepoWorkflows(w http.ResponseWriter, r *http.Request)
 	repoOwner := params["repoOwner"][0]
 	repoName := params["repoName"][0]
 	repoBranch := params["repoBranch"][0]
-	log.Printf("[ListRepoCharts] Req Repo: %s/%s/%s\n", repoOwner, repoName, repoBranch)
+	log.Printf("[ListRepoWorkflows] Req Repo: %s/%s/%s\n", repoOwner, repoName, repoBranch)
 
 	tree, err := api.GHClient.GetBranchTree(ctx, repoOwner, repoName, repoBranch)
 	if err != nil {
@@ -146,7 +146,7 @@ func (api *K8sService) ListRepoWorkflows(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	log.Println("[ListRepoCharts] Found Workflows: ", len(workflows))
+	log.Println("[ListRepoWorkflows] Found Workflows: ", len(workflows))
 
 	resp := types.WorkflowResponse{
 		Data: workflows,
