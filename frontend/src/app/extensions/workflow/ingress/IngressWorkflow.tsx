@@ -198,6 +198,7 @@ export default function IngressWorkflow(
     console.log(yamlObj);
     console.log(yamlObj.jobs?.aks?.steps);
     yamlObj.jobs.aks.steps.push(ingressWorkflow);
+    YAML.scalarOptions.str.fold = { lineWidth: 0, minContentWidth: 20 }
     let finalYaml = YAML.stringify(yamlObj);
     setSelectedWorkflow(workflow)
     setWorkflowDefinition(finalYaml)
