@@ -48,12 +48,19 @@ const githubActionSteps = [
   "Confirm",
 ];
 
+const defaultActionUrls = [
+  "https://github.com/Azure/k8s-bake",
+  "https://github.com/Azure/k8s-set-context",
+  "https://github.com/Azure/k8s-deploy",
+  "https://github.com/gambtho/aks_devcluster_action",
+];
+
 export default function GithubActionWorkflow(props: {
   appState: AppState;
   setAppState: (appState: AppState) => void;
 }) {
   const [workflows, setWorkflows] = React.useState<WorkflowEntry[]>([]);
-  const [actionUrl, setActionUrl] = React.useState<String>("");
+  const [actionUrl, setActionUrl] = React.useState<string>("");
   const { appState, setAppState } = props;
   const [action, setAction] = React.useState<Action>();
   const [workflowStep, setWorkflowStep] = React.useState<number>(0);
@@ -99,9 +106,9 @@ export default function GithubActionWorkflow(props: {
     );
   }, []);
 
-  const getAction = () => {
+  const getAction = (url: string) => {
     getWorkflow();
-    let parts = actionUrl?.split("/");
+    let parts = url.split("/");
     const repoName = parts?.pop() || parts?.pop(); // handles trailing slash
     const repoOwner = parts?.pop();
 
@@ -113,6 +120,7 @@ export default function GithubActionWorkflow(props: {
         },
         setAction
       );
+      setActionUrl(url);
       setWorkflowStep(workflowStep + 1);
     }
   };
@@ -169,7 +177,7 @@ export default function GithubActionWorkflow(props: {
     let parts = actionUrl?.split("/");
     const repoName = parts?.pop() || parts?.pop(); // handles trailing slash
     const repoOwner = parts?.pop();
-    let newStep = `${" ".repeat(spaces)}- uses: ${repoOwner}/${repoName}}`;
+    let newStep = `${" ".repeat(spaces)}- uses: ${repoOwner}/${repoName}`;
     if (actionFields.size > 0) {
       newStep += `\n${" ".repeat(spaces)}  with:`;
     }
@@ -280,6 +288,15 @@ export default function GithubActionWorkflow(props: {
           </Typography>
           <Paper sx={{ display: "flex", flexDirection: "column" }}>
             <Divider />
+            <List>
+              {defaultActionUrls.map((url) => (
+                <ListItem button onClick={() => getAction(url)}>
+                  <ListItemText style={{ color: "blue" }} primary={url} />
+                </ListItem>
+              ))}
+            </List>
+            <Divider />
+
             <div
               style={{
                 display: "flex",
@@ -299,7 +316,7 @@ export default function GithubActionWorkflow(props: {
                 value={actionUrl}
                 onChange={(e) => setActionUrl(e.target.value)}
               />
-              <Button variant="contained" onClick={() => getAction()}>
+              <Button variant="contained" onClick={() => getAction(actionUrl)}>
                 Use
               </Button>
             </div>
