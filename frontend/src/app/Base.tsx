@@ -25,11 +25,10 @@ import MenuIcon from "@mui/icons-material/Menu";
 import ExtensionsCard from "./extensions/ExtensionsCard";
 import IngressWorkflow from "./extensions/workflow/ingress/IngressWorkflow";
 import BaseDrawer from "./BaseDrawer";
-import ServiceMeshWorkflow from './extensions/workflow/serviceMesh/ServiceMeshWorkflow';
+import ServiceMeshWorkflow from "./extensions/workflow/serviceMesh/ServiceMeshWorkflow";
 import { AccountCircle, OpenInBrowser } from "@mui/icons-material";
 import AppSelect from "./repo_select/AppSelect";
 import GithubActionWorkflow from "./extensions/workflow/githubAction/GithubActionWorkflow";
-import { AppState, BaseDisplayState, emptyAppState, HomeDisplay, } from '../models/types';
 
 const theme = createTheme();
 const drawerWidth = 240;
@@ -57,12 +56,10 @@ const AppBar = styled(MuiAppBar, {
 }));
 
 export default function Base() {
-  const [appState, setAppState] = React.useState<AppState>(
-    {
-      ...emptyAppState(),
-      ghUserName: '',
-    },
-  );
+  const [appState, setAppState] = React.useState<AppState>({
+    ...emptyAppState(),
+    ghUserName: "",
+  });
   const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
   const menuOpen = Boolean(menuAnchor);
   const [open, setOpen] = React.useState<boolean>(false);
@@ -184,63 +181,64 @@ export default function Base() {
           }}
         >
           <Toolbar />
-          <Container maxWidth="md" sx={{
-            mt: 4, mb: 4, flexGrow: 1
-          }}>
-            {appState.baseDisplayState == BaseDisplayState.HOME
-              && (
-                <div>
-                  <Typography
-                    component="h1"
-                    variant="h2"
-                    align="center"
-                    color="text.primary"
-                    gutterBottom
-                  >
-                    App Extension Helper
-                  </Typography>
-                  <Typography variant="h5" align="center" color="text.secondary" paragraph>
-                    Connect to your GitHub account to explore how you can extend your k8s application!
-                  </Typography>
-                  <Stack
-                    sx={{
-                      pt: 4
-                    }}
-                    direction="row"
-                    spacing={2}
-                    justifyContent="center"
-                  >
-                    <Button variant="contained" onClick={selectRepos}>Connect to GitHub</Button>
-                  </Stack>
-                </div>
-              )}
-            {appState.baseDisplayState == BaseDisplayState.REPO_SELECT
-              && (
-                <AppSelect
-                  appState={appState}
-                  setAppState={setAppState}
-                />
-              )}
-            {appState.baseDisplayState == BaseDisplayState.EXTENSION_DISPLAY
-              && (
-                <ExtensionsCard
-                  appState={appState}
-                  setAppState={setAppState}
-                />
-              )}
-            {appState.baseDisplayState == BaseDisplayState.INGRESS_DISPLAY
-              && (
-                <IngressWorkflow
-                  appState={appState}
-                  setAppState={setAppState}
-                />
-              )}
-            {appState.baseDisplayState == BaseDisplayState.SERVICEMESH_DISPLAY
-            && (
-                <ServiceMeshWorkflow
-                    appState={appState}
-                    setAppState={setAppState}
-                />
+          <Container
+            maxWidth="md"
+            sx={{
+              mt: 4,
+              mb: 4,
+              flexGrow: 1,
+            }}
+          >
+            {appState.baseDisplayState == BaseDisplayState.HOME && (
+              <div>
+                <Typography
+                  component="h1"
+                  variant="h2"
+                  align="center"
+                  color="text.primary"
+                  gutterBottom
+                >
+                  App Extension Helper
+                </Typography>
+                <Typography
+                  variant="h5"
+                  align="center"
+                  color="text.secondary"
+                  paragraph
+                >
+                  Connect to your GitHub account to explore how you can extend
+                  your k8s application!
+                </Typography>
+                <Stack
+                  sx={{
+                    pt: 4,
+                  }}
+                  direction="row"
+                  spacing={2}
+                  justifyContent="center"
+                >
+                  <Button variant="contained" onClick={selectRepos}>
+                    Connect to GitHub
+                  </Button>
+                </Stack>
+              </div>
+            )}
+            {appState.baseDisplayState == BaseDisplayState.REPO_SELECT && (
+              <AppSelect appState={appState} setAppState={setAppState} />
+            )}
+            {appState.baseDisplayState ==
+              BaseDisplayState.EXTENSION_DISPLAY && (
+              <ExtensionsCard appState={appState} setAppState={setAppState} />
+            )}
+            {appState.baseDisplayState == BaseDisplayState.INGRESS_DISPLAY && (
+              <IngressWorkflow appState={appState} setAppState={setAppState} />
+            )}
+            {appState.baseDisplayState ==
+              BaseDisplayState.SERVICEMESH_DISPLAY && (
+              <ServiceMeshWorkflow
+                appState={appState}
+                setAppState={setAppState}
+              />
             )}
           </Container>
         </Box>
