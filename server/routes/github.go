@@ -8,11 +8,14 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
 	"k8s-tooling-adapter/server/types"
 
+	"gopkg.in/yaml.v2"
 	"github.com/google/go-github/v38/github"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -88,6 +91,240 @@ func (api *K8sService) ListManifestOption(w http.ResponseWriter, r *http.Request
 	}
 
 	log.Println("[ListManifestOption] completed")
+	w.WriteHeader(http.StatusOK)
+}
+
+func (api *K8sService) ListRepoWorkflows(w http.ResponseWriter, r *http.Request) {
+	log.Println("[ListRepoWorkflows] starting service call")
+	ctx := context.Background()
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	params := r.URL.Query()
+	if _, ok := params["repoOwner"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid repoOwner parameter"))
+		return
+	}
+
+	if _, ok := params["repoName"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid repoName parameter"))
+		return
+	}
+
+	if _, ok := params["repoBranch"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid repoBranch parameter"))
+		return
+	}
+
+	repoOwner := params["repoOwner"][0]
+	repoName := params["repoName"][0]
+	repoBranch := params["repoBranch"][0]
+	log.Printf("[ListRepoCharts] Req Repo: %s/%s/%s\n", repoOwner, repoName, repoBranch)
+
+	tree, err := api.GHClient.GetBranchTree(ctx, repoOwner, repoName, repoBranch)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
+
+	reg, err := regexp.Compile(".github/workflows/.+.ya?ml")
+	if err != nil {
+		log.Printf("ERROR: %s", err.Error())
+	}
+
+	workflows := make([]*types.Workflow, 0)
+	for _, entry := range tree.Entries {
+		if entry == nil || entry.Path == nil {
+			continue
+		}
+
+		if reg.MatchString(*entry.Path) {
+			workflows = append(workflows, &types.Workflow{
+				SHA: *entry.SHA,
+				Path: *entry.Path,
+			})
+		}
+	}
+
+	log.Println("[ListRepoCharts] Found Workflows: ", len(workflows))
+
+	resp := types.WorkflowResponse{
+		Data: workflows,
+	}
+
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
+
+	log.Println("[ListRepoWorkflows] completed")
+	w.WriteHeader(http.StatusOK)
+}
+
+func (api *K8sService) GetRepoAction(w http.ResponseWriter, r *http.Request) {
+	log.Println("[GetRepoAction] starting service call")
+	ctx := context.Background()
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	params := r.URL.Query()
+	if _, ok := params["repoOwner"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid repoOwner parameter"))
+		return
+	}
+
+	if _, ok := params["repoName"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid repoName parameter"))
+		return
+	}
+
+	if _, ok := params["repoBranch"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid repoBranch parameter"))
+		return
+	}
+
+	repoOwner := params["repoOwner"][0]
+	repoName := params["repoName"][0]
+	repoBranch := params["repoBranch"][0]
+	log.Printf("[GetRepoAction] Req Repo: %s/%s/%s\n", repoOwner, repoName, repoBranch)
+
+	tree, err := api.GHClient.GetBranchTree(ctx, repoOwner, repoName, repoBranch)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
+
+	reg, err := regexp.Compile("action.ya?ml")
+	if err != nil {
+		log.Printf("ERROR: %s", err.Error())
+	}
+
+	var actionYml *types.TreeEntry;
+	for _, entry := range tree.Entries {
+		if entry == nil || entry.Path == nil {
+			continue
+		}
+
+		if reg.MatchString(*entry.Path) {
+			actionYml = &types.TreeEntry{
+				SHA: *entry.SHA,
+				Path: *entry.Path,
+			}
+			break
+		}
+	}
+
+	blob, err := api.GHClient.GetBlob(ctx, repoOwner, repoName, actionYml.SHA)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
+
+	stringYmlFile, err := base64.StdEncoding.DecodeString(blob.GetContent())
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
+
+	var yamlConfig types.ActionYml
+	err = yaml.Unmarshal(stringYmlFile, &yamlConfig)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
+
+	action := types.Action{
+		Name: yamlConfig.Name,
+		Description: yamlConfig.Description,
+		Inputs: make([]types.ActionInput, 0),
+	}
+	for k, v := range yamlConfig.Inputs {
+		input := types.ActionInput{
+			Name: k,
+		}
+
+		if description, ok := v["description"]; ok {
+			input.Description = description
+		}
+		if required, ok := v["required"]; ok {
+			parsed, err := strconv.ParseBool(required)
+			if err == nil {
+				input.Required = parsed
+			} else {
+				input.Required = false
+			}
+		} else {
+			input.Required = false
+		}
+
+		action.Inputs = append(action.Inputs, input)
+	}
+
+	resp := types.ActionResponse{
+		Data: &action,
+	}
+
+	log.Println("[GetRepoAction] Writing response")
+
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
+
+	log.Println("[GetRepoAction] completed")
+	w.WriteHeader(http.StatusOK)
+}
+
+func (api *K8sService) GetWorkflowFile(w http.ResponseWriter, r *http.Request) {
+	log.Println("[GetWorkflowFile] starting service call")
+	ctx := context.Background()
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	params := r.URL.Query()
+	if _, ok := params["repoOwner"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid repoOwner parameter"))
+		return
+	}
+
+	if _, ok := params["repoName"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid repoName parameter"))
+		return
+	}
+
+	if _, ok := params["repoBranch"]; !ok {
+		api.WriteHTTPErrorResponse(w, 400, fmt.Errorf("invalid repoBranch parameter"))
+		return
+	}
+
+	repoOwner := params["repoOwner"][0]
+	repoName := params["repoName"][0]
+	sha := params["sha"][0]
+
+	blob, err := api.GHClient.GetBlob(ctx, repoOwner, repoName, sha)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
+
+	bytesYmlFile, err := base64.StdEncoding.DecodeString(blob.GetContent())
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
+
+	stringYmlFile := string(bytesYmlFile[:])
+	resp := types.WorkflowFileResponse{
+		Data: &types.WorkflowFile{Contents: stringYmlFile},
+	}
+
+	log.Println(("[GetWorkflowFile] Writing response"))
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
+
+	log.Println("[GetWorkflowFile] completed")
 	w.WriteHeader(http.StatusOK)
 }
 

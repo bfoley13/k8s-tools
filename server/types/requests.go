@@ -40,3 +40,14 @@ type UpdateWorkflowPullRequest struct {
 	WorkflowDefinition string `json:"workflowDefinition"`
 	WorkflowFile       string `json:"workflowFile"`
 }
+
+type ActionRequest struct {
+	Url string  `json:"url"`
+}
+
+type WorkflowRequest struct {
+	RepoOwner  string `json:"repoOwner"`
+	RepoName   string `json:"repoName"`
+	RepoBranch string `json:"repoBranch"`
+	Sha 	   string `json:"sha"`
+}

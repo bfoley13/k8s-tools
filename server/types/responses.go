@@ -20,12 +20,20 @@ type ManifestOptionResponse struct {
 	Data []*ManifestOption `json:"data"`
 }
 
+type WorkflowResponse struct {
+	Data []*Workflow `json:"data"`
+}
+
 type ServiceResponse struct {
 	Data []*Service `json:"data"`
 }
 
 type TreeResponse struct {
 	Data []*TreeEntry `json:"data"`
+}
+
+type ActionResponse struct {
+	Data *Action `json:"data"`
 }
 
 type ListWorkflowResponse struct {
@@ -49,6 +57,11 @@ type ManifestOption struct {
 	Path string `json:"path"`
 }
 
+type Workflow struct {
+	SHA  string `json:"sha"`
+	Path string `json:"path"`
+}
+
 type Service struct {
 	Name string `json:"name"`
 }
@@ -66,6 +79,32 @@ type WorkflowDefinition struct {
 
 type CreatePullRequestResponse struct {
 	PullRequestURL string `json:"pullRequestURL"`
+}
+
+type ActionInput struct {
+	Name string `json:"name"`
+	Description string `json:"description"`
+	Required bool `json:"required"`
+}
+
+type Action struct {
+	Name string `json:"name"`
+	Description string `json:"description"`
+	Inputs []ActionInput `json:"inputs"`
+}
+
+type ActionYml struct {
+	Name string
+	Description string
+	Inputs map[string]map[string]string
+}
+
+type WorkflowFile struct {
+	Contents string `json:"contents"`
+}
+
+type WorkflowFileResponse struct {
+	Data *WorkflowFile  `json:"data"`
 }
 
 func GitHubToResponseRepository(repoOwner string, repos []*github.Repository) []*Repository {

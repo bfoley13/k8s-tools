@@ -13,6 +13,45 @@ export interface ListChartEntryRequest {
   repoBranch: string;
 }
 
+export interface ListWorkflowsEntryRequest {
+  repoOwner: string;
+  repoName: string;
+  repoBranch: string;
+}
+
+export interface GetWorkflowEntryRequest {
+  repoOwner: string;
+  repoName: string;
+  repoBranch: string;
+  sha: string;
+}
+
+export interface Workflow {
+  contents: string;
+}
+
+export interface WorkflowFileSplit {
+  metadata: string;
+  steps: string[];
+}
+
+export interface GetActionEntryRequest {
+  repoOwner: string;
+  repoName: string;
+}
+
+export interface ActionInput {
+  name: string;
+  description: string;
+  required: boolean;
+}
+
+export interface Action {
+  name: string;
+  description: string;
+  inputs: ActionInput[];
+}
+
 export interface ListServicesRequest {
   repoOwner: string;
   repoName: string;
@@ -65,6 +104,11 @@ export interface Branch {
 }
 
 export interface ChartEntry {
+  sha: string;
+  path: string;
+}
+
+export interface WorkflowEntry {
   sha: string;
   path: string;
 }

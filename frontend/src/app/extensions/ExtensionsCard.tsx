@@ -1,68 +1,84 @@
-import { Card, CardActionArea, CardContent, Divider, Grid, Paper, Typography } from '@mui/material';
-import * as React from 'react';
-import appGWLogo from '../../logos/appGW_ingress.png';
-import apisixLogo from '../../logos/apisix_Logo.svg';
-import kongLogo from '../../logos/kong_icon.png';
-import nginxLogo from '../../logos/nginx_Ingress.png';
-import osmLogo from '../../logos/smi.png';
-import kumaLogo from '../../logos/Kuma.jpg';
-import istioLogo from '../../logos/istio.png';
-import linkerd from '../../logos/linkerd.png';
-import { AppState, BaseDisplayState } from '../../models/types';
-
+import {
+  Card,
+  CardActionArea,
+  CardContent,
+  Divider,
+  Grid,
+  Paper,
+  Typography,
+} from "@mui/material";
+import * as React from "react";
+import appGWLogo from "../../logos/appGW_ingress.png";
+import apisixLogo from "../../logos/apisix_Logo.svg";
+import kongLogo from "../../logos/kong_icon.png";
+import nginxLogo from "../../logos/nginx_Ingress.png";
+import osmLogo from "../../logos/smi.png";
+import kumaLogo from "../../logos/Kuma.jpg";
+import istioLogo from "../../logos/istio.png";
+import linkerd from "../../logos/linkerd.png";
+import githubActionLogo from "../../logos/github_actions.png";
+import { AppState, BaseDisplayState } from "../../models/types";
 
 const ingressProviders = [
   {
     logo: nginxLogo,
-    text: "NGINX"
+    text: "NGINX",
   },
   {
     logo: appGWLogo,
-    text: "Application Gateway"
+    text: "Application Gateway",
   },
   {
     logo: apisixLogo,
-    text: "APISIX"
+    text: "APISIX",
   },
   {
     logo: kongLogo,
-    text: "KONG"
-  }
+    text: "KONG",
+  },
 ];
 
 const serviceMeshProviders = [
   {
     logo: osmLogo,
-    text: "Open Service Mesh"
+    text: "Open Service Mesh",
   },
   {
     logo: istioLogo,
-    text: "Istio"
+    text: "Istio",
   },
   {
     logo: linkerd,
-    text: "Linkerd"
+    text: "Linkerd",
   },
   {
     logo: kumaLogo,
-    text: "Kuma"
-  }
+    text: "Kuma",
+  },
 ];
 
+const githubAction = { logo: githubActionLogo, text: "Github Action" };
 
-export default function ExtensionsCard(
-  props: {
-    appState: AppState,
-    setAppState: (appState: AppState) => void
-  }) {
+export default function ExtensionsCard(props: {
+  appState: AppState;
+  setAppState: (appState: AppState) => void;
+}) {
   const { appState, setAppState } = props;
 
   const selectIngress = () => {
     setAppState({
-      ...appState, baseDisplayState: BaseDisplayState.INGRESS_DISPLAY
-    })
-  }
+      ...appState,
+      baseDisplayState: BaseDisplayState.INGRESS_DISPLAY,
+    });
+  };
 
+  const selectGithubAction = () => {
+    setAppState({
+      ...appState,
+      baseDisplayState: BaseDisplayState.GITHUB_ACTION_DISPLAY,
+    });
+  };
+  
   const selectServiceMeshIngress = () => {
     setAppState({
       ...appState, baseDisplayState: BaseDisplayState.SERVICEMESH_DISPLAY
@@ -78,8 +94,8 @@ export default function ExtensionsCard(
         align="center"
         color="text.secondary"
         sx={{
-          width: '100%',
-          margin: 'auto'
+          width: "100%",
+          margin: "auto",
         }}
         paragraph
       >
@@ -134,9 +150,9 @@ export default function ExtensionsCard(
         align="center"
         color="text.secondary"
         sx={{
-          width: '100%',
-          margin: 'auto',
-          mt: '30px',
+          width: "100%",
+          margin: "auto",
+          mt: "30px",
         }}
         paragraph
       >
@@ -186,7 +202,6 @@ export default function ExtensionsCard(
           }
         </Grid>
       </Grid>
-
     </Grid>
   );
 }
