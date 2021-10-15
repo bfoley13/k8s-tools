@@ -104,7 +104,10 @@ export default function GithubActionWorkflow(props: {
 
   const getNewYaml = (): string => {
     return (
-      workflowFileSplit.metadata + "\n" + workflowFileSplit.steps.join("\n\n")
+      workflowFileSplit.metadata +
+      "\n" +
+      workflowFileSplit.steps.join("\n\n") +
+      "\n\n"
     );
   };
 
@@ -186,7 +189,7 @@ export default function GithubActionWorkflow(props: {
     steps = steps.map((step) =>
       step
         .split("\n")
-        .map((line) => " ".repeat(spaces) + line)
+        .map((line, index) => (index == 0 ? " ".repeat(spaces) + line : line))
         .join("\n")
     );
 
