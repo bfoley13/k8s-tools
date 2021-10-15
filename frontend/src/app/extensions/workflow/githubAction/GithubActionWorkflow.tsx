@@ -496,6 +496,44 @@ export default function GithubActionWorkflow(props: {
           </Button>
         </Container>
       )}
+      {workflowStep == 4 && (
+        <Container
+          maxWidth="md"
+          sx={{
+            marginTop: "25px",
+          }}
+        >
+          <Typography
+            variant="h5"
+            align="center"
+            color="text.secondary"
+            paragraph
+          >
+            Confirm
+          </Typography>
+          <Paper
+            sx={{
+              padding: "20px",
+            }}
+          >
+            {prUrl == "" ? (
+              <Typography color="text.secondary" paragraph>
+                Generating pull request...
+              </Typography>
+            ) : (
+              <a
+                href={prUrl}
+                style={{
+                  flex: 1,
+                  alignContent: "center",
+                }}
+              >
+                Pull Request Link
+              </a>
+            )}
+          </Paper>
+        </Container>
+      )}
     </Container>
   );
 }
