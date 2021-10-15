@@ -3,6 +3,7 @@ import {
   Action,
   Branch,
   ChartEntry,
+  CreateActionPrRequest,
   CreateIngressPRRequest,
   GetActionEntryRequest,
   GetWorkflowEntryRequest,
@@ -288,6 +289,21 @@ export function CreateIngressPR(
 
   axios.defaults.baseURL = baseURL;
   axios.post(baseURL + "/api/github/repository/pr", req).then((resp) => {
+    console.log("Got Response: ");
+    console.log(resp);
+    handleResponse(resp.data.pullRequestURL);
+  });
+}
+
+export function CreateActionPR(
+  req: CreateActionPrRequest,
+  handleResponse: (prURL: string) => void
+) {
+  console.log("CreateActionPR");
+  console.log(req);
+
+  axios.defaults.baseURL = baseURL;
+  axios.post(baseURL + "/api/github/repository/actionpr", req).then((resp) => {
     console.log("Got Response: ");
     console.log(resp);
     handleResponse(resp.data.pullRequestURL);

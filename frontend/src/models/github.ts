@@ -83,6 +83,14 @@ export interface CreateIngressPRRequest {
   workflowFile: string;
 }
 
+export interface CreateActionPrRequest {
+  repoOwner: string;
+  repoName: string;
+  repoBranch: string;
+  workflowDefinition: string;
+  workflowFile: string;
+}
+
 export interface CreateWorkflowPRRequest {
   repoOwner: string;
   repoName: string;

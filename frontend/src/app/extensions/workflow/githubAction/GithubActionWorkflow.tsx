@@ -1,5 +1,10 @@
 import React from "react";
-import { GetAction, GetWorkflow, ListWorkflows } from "../../../../api/github";
+import {
+  CreateActionPR,
+  GetAction,
+  GetWorkflow,
+  ListWorkflows,
+} from "../../../../api/github";
 import {
   Action,
   Workflow,
@@ -73,6 +78,7 @@ export default function GithubActionWorkflow(props: {
   const [workflow, setWorkflow] = React.useState<Workflow>({ contents: "" });
   const [workflowFileSplit, setWorkflowFileSplit] =
     React.useState<WorkflowFileSplit>({ metadata: "", steps: [] });
+  const [prUrl, setPrUrl] = React.useState<string>("");
 
   const setSteps = (newSteps: string[]) => {
     setWorkflowFileSplit({
@@ -101,6 +107,20 @@ export default function GithubActionWorkflow(props: {
       workflowFileSplit.metadata + "\n" + workflowFileSplit.steps.join("\n\n")
     );
   };
+
+  function createPR() {
+    CreateActionPR(
+      {
+        repoOwner: appState.ghUserName,
+        repoName: appState.repo.name,
+        repoBranch: appState.branch.name,
+        workflowDefinition: getNewYaml(),
+        workflowFile: selectedWorkflow?.path || "",
+      },
+      setPrUrl
+    );
+    setWorkflowStep(workflowStep + 1);
+  }
 
   React.useEffect(() => {
     ListWorkflows(
@@ -470,7 +490,7 @@ export default function GithubActionWorkflow(props: {
           <Button
             style={{ marginTop: "20px", width: "100%" }}
             variant="contained"
-            onClick={() => console.log(getNewYaml())}
+            onClick={() => createPR()}
           >
             Add
           </Button>

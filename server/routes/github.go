@@ -15,8 +15,8 @@ import (
 
 	"k8s-tooling-adapter/server/types"
 
-	"gopkg.in/yaml.v2"
 	"github.com/google/go-github/v38/github"
+	"gopkg.in/yaml.v2"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 )
@@ -740,6 +740,91 @@ func (api *K8sService) getHelmManifestYamls(repoName, repoOwner, repoBranch, cha
 	log.Println("[ListServices] Manifest generated successfully")
 
 	return strings.Split(helmManifest, "---"), nil
+}
+
+func (api *K8sService) CreateActionPr(w http.ResponseWriter, r *http.Request) {
+	log.Println("[CreateActionPr] starting service calll")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	ctx := context.Background()
+
+	log.Printf("[CreateActionPr] request body: %v\n", r.Body)
+	requestDecoder := json.NewDecoder(r.Body)
+	defer func() {
+		if err := r.Body.Close(); err != nil {
+			api.WriteHTTPErrorResponse(w, 500, err)
+		}
+	}()
+
+	createActionPr := &types.CreateActionPr{}
+	err := requestDecoder.Decode(createActionPr)
+	if err != nil {
+		log.Println("[CreateActionPr] failed to decode request body")
+		api.WriteHTTPErrorResponse(w, 400, err)
+		return
+	}
+	log.Printf("[CreateActionPr] Request: %+v\n", createActionPr)
+
+	err = api.LocalRepoService.CloneRepositoryLocaly(api.accessToken, createActionPr.RepoOwner, createActionPr.RepoName, createActionPr.RepoBranch)
+	if err != nil {
+		log.Println("[GetRepoAction] failed to clone repo locally")
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
+
+	newBranchName := generateBranchName(charset, 5)
+	fmt.Println("[CreateActionPr] Getting repo reference")
+	ref, err := api.GHClient.GetReference(ctx, createActionPr.RepoOwner, createActionPr.RepoName, newBranchName, createActionPr.RepoBranch)
+	if err != nil || ref == nil {
+		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to make new commit ref"))
+		return
+	}
+
+	newWorkflowFileName := ""
+	if createActionPr.WorkflowFile != "" {
+		fmt.Println("[CreateActionPr] Saving workflow definition locally")
+		newWorkflowFileName, err = api.LocalRepoService.SaveFile(createActionPr.RepoOwner, createActionPr.RepoName, createActionPr.RepoBranch, createActionPr.WorkflowDefinition, createActionPr.WorkflowFile)
+		if err != nil {
+			api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to save file: %s", err))
+			return
+		}
+	}
+
+	fmt.Println("[CreateActionPr] Creating new commit tree")
+	sourceFile := fmt.Sprintf("%s:%s", newWorkflowFileName, createActionPr.WorkflowFile)
+	tree, err := api.GHClient.GenerateCommitTree(ctx, ref, createActionPr.RepoOwner, createActionPr.RepoName, sourceFile)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to generate new commit tree: %s", err.Error()))
+		return
+	}
+
+	fmt.Println("[CreateActionPr] Creating new commit")
+	_, err = api.GHClient.CreateCommit(ctx, ref, tree, createActionPr.RepoOwner, createActionPr.RepoName)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to create commit: %s", err.Error()))
+		return
+	}
+
+
+	fmt.Println("[CreateActionPr] Generating pull request")
+	msg := "Adding action to workflow"
+	pr, err := api.GHClient.CreatePullRequest(ctx, "Ingress Addition", createActionPr.RepoOwner, createActionPr.RepoName, createActionPr.RepoBranch, msg, createActionPr.RepoOwner, createActionPr.RepoName, newBranchName)
+	if err != nil {
+		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to create pull request: %s", err.Error()))
+		return
+	}
+
+	resp := &types.CreatePullRequestResponse{
+		PullRequestURL: pr.GetHTMLURL(),
+	}
+
+	log.Println("[CreateActionPr] Completed")
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		api.WriteHTTPErrorResponse(w, 500, err)
+		return
+	}
 }
 
 func (api *K8sService) getDefinedManifestYamls(ctx context.Context, repoName, repoOwner, repoBranch string) ([]string, error) {
