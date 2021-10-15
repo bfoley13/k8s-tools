@@ -27,34 +27,21 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { AppState, BaseDisplayState } from "../../../../models/types";
-import { useState } from "react";
-import { styled } from "@mui/material/styles";
-import MonacoEditor, { MonacoEditorProps } from "@uiw/react-monacoeditor";
-import ArrowForwardIosSharpIcon from "@mui/icons-material/ArrowForwardIosSharp";
-import MuiAccordion, { AccordionProps } from "@mui/material/Accordion";
-import MuiAccordionSummary, {
-  AccordionSummaryProps,
-} from "@mui/material/AccordionSummary";
-import MuiAccordionDetails from "@mui/material/AccordionDetails";
-import {
-  Repository,
-  RepoWorkflow,
-  ServiceEntry,
-  TreeEntry,
-} from "../../../../models/github";
-import {
-  CreateIngressPR,
-  ListDirectories,
-  ListRepositories,
-  ListRepoWorkflows,
-  ListServices,
-} from "../../../../api/github";
-import { Code, GitHub } from "@mui/icons-material";
-import { baseYaml, rule, path, ingressWorkflow } from "./yaml";
-import YAML from "yaml";
-import Editor from "@monaco-editor/react";
-import { editor } from "monaco-editor";
-import * as monaco from "monaco-editor";
+import { useState } from 'react';
+import { styled } from '@mui/material/styles';
+import MonacoEditor, { MonacoEditorProps } from '@uiw/react-monacoeditor';
+import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
+import MuiAccordion, { AccordionProps } from '@mui/material/Accordion';
+import MuiAccordionSummary, { AccordionSummaryProps } from '@mui/material/AccordionSummary';
+import MuiAccordionDetails from '@mui/material/AccordionDetails';
+import { Repository, RepoWorkflow, ServiceEntry, TreeEntry } from '../../../../models/github';
+import { CreateIngressPR, ListDirectories, ListRepositories, ListRepoWorkflows, ListRepoWorkflowsWithFiles, ListServices } from '../../../../api/github';
+import { Code, GitHub } from '@mui/icons-material';
+import { baseYaml, rule, path, ingressWorkflow } from './yaml';
+import YAML from 'yaml';
+import Editor from '@monaco-editor/react'
+import { editor } from 'monaco-editor'
+import * as monaco from 'monaco-editor';
 
 const ingressSteps = [
   "Select Backing Service",
@@ -177,15 +164,12 @@ export default function IngressWorkflow(props: {
   }, []);
 
   React.useEffect(() => {
-    ListRepoWorkflows(
-      {
-        repoOwner: appState.ghUserName,
-        repoName: appState.repo.name,
-        branchSha: appState.branch.sha,
-      },
-      setRepoWorkflows
-    );
-  }, [selectedDirectory]);
+    ListRepoWorkflowsWithFiles({
+      repoOwner: appState.ghUserName,
+      repoName: appState.repo.name,
+      branchSha: appState.branch.sha
+    }, setRepoWorkflows);
+  }, [selectedDirectory])
 
   function selectServices(services: ServiceEntry[]) {
     setSelectedServices(services);
@@ -252,11 +236,14 @@ export default function IngressWorkflow(props: {
     console.log(workflowDefinition);
   }
 
+
+
   function selectWorkflow(workflow: RepoWorkflow) {
     let yamlObj = YAML.parse(workflow.workflowYaml);
     console.log(yamlObj);
     console.log(yamlObj.jobs?.aks?.steps);
     yamlObj.jobs.aks.steps.push(ingressWorkflow);
+    YAML.scalarOptions.str.fold = { lineWidth: 0, minContentWidth: 20 }
     let finalYaml = YAML.stringify(yamlObj);
     setSelectedWorkflow(workflow);
     setWorkflowDefinition(finalYaml);

@@ -1,6 +1,5 @@
 import axios from "axios";
-import {
-  Action,
+import {Action,
   Branch,
   ChartEntry,
   CreateActionPrRequest,
@@ -19,8 +18,7 @@ import {
   ServiceEntry,
   TreeEntry,
   Workflow,
-  WorkflowEntry,
-} from "../models/github";
+  WorkflowEntry,} from "../models/github";
 
 const baseURL = "http://localhost:8080";
 
@@ -234,6 +232,34 @@ export function ListRepoWorkflows(
   axios.defaults.baseURL = baseURL;
   axios
     .get(baseURL + "/api/github/repository/workflows", {
+      params: {
+        repoOwner: req.repoOwner,
+        repoName: req.repoName,
+        branchSha: req.branchSha,
+      },
+    })
+    .then((resp) => {
+      console.log("Got Response: ");
+      console.log(resp);
+      handleResponse(resp.data.data);
+    });
+}
+
+export function ListRepoWorkflowsWithFiles(
+  req: ListRepoWorkflowRequest,
+  handleResponse: (response: RepoWorkflow[]) => void
+) {
+  console.log("ListRepoWorkflows");
+  console.log(req);
+
+  if (!req.repoOwner) {
+    console.warn("ListRepoWorkflows cancelled due to blank username");
+    return;
+  }
+
+  axios.defaults.baseURL = baseURL;
+  axios
+    .get(baseURL + "/api/github/repository/workflowswithfiles", {
       params: {
         repoOwner: req.repoOwner,
         repoName: req.repoName,
