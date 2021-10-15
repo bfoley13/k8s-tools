@@ -810,7 +810,7 @@ func (api *K8sService) CreateActionPr(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("[CreateActionPr] Generating pull request")
 	msg := "Adding action to workflow"
-	pr, err := api.GHClient.CreatePullRequest(ctx, "Ingress Addition", createActionPr.RepoOwner, createActionPr.RepoName, createActionPr.RepoBranch, msg, createActionPr.RepoOwner, createActionPr.RepoName, newBranchName)
+	pr, err := api.GHClient.CreatePullRequest(ctx, "Action Workflow Addition", createActionPr.RepoOwner, createActionPr.RepoName, createActionPr.RepoBranch, msg, createActionPr.RepoOwner, createActionPr.RepoName, newBranchName)
 	if err != nil {
 		api.WriteHTTPErrorResponse(w, 500, fmt.Errorf("failed to create pull request: %s", err.Error()))
 		return
