@@ -1,5 +1,10 @@
 import React from "react";
-import { GetAction, GetWorkflow, ListWorkflows } from "../../../../api/github";
+import {
+  CreateActionPR,
+  GetAction,
+  GetWorkflow,
+  ListWorkflows,
+} from "../../../../api/github";
 import {
   Action,
   Workflow,
@@ -73,6 +78,7 @@ export default function GithubActionWorkflow(props: {
   const [workflow, setWorkflow] = React.useState<Workflow>({ contents: "" });
   const [workflowFileSplit, setWorkflowFileSplit] =
     React.useState<WorkflowFileSplit>({ metadata: "", steps: [] });
+  const [prUrl, setPrUrl] = React.useState<string>("");
 
   const setSteps = (newSteps: string[]) => {
     setWorkflowFileSplit({
@@ -95,6 +101,26 @@ export default function GithubActionWorkflow(props: {
 
     return !!unfulfilled && unfulfilled?.length == 0;
   };
+
+  const getNewYaml = (): string => {
+    return (
+      workflowFileSplit.metadata + "\n" + workflowFileSplit.steps.join("\n\n")
+    );
+  };
+
+  function createPR() {
+    CreateActionPR(
+      {
+        repoOwner: appState.ghUserName,
+        repoName: appState.repo.name,
+        repoBranch: appState.branch.name,
+        workflowDefinition: getNewYaml(),
+        workflowFile: selectedWorkflow?.path || "",
+      },
+      setPrUrl
+    );
+    setWorkflowStep(workflowStep + 1);
+  }
 
   React.useEffect(() => {
     ListWorkflows(
@@ -464,10 +490,48 @@ export default function GithubActionWorkflow(props: {
           <Button
             style={{ marginTop: "20px", width: "100%" }}
             variant="contained"
-            onClick={() => console.log(workflowFileSplit)}
+            onClick={() => createPR()}
           >
             Add
           </Button>
+        </Container>
+      )}
+      {workflowStep == 4 && (
+        <Container
+          maxWidth="md"
+          sx={{
+            marginTop: "25px",
+          }}
+        >
+          <Typography
+            variant="h5"
+            align="center"
+            color="text.secondary"
+            paragraph
+          >
+            Confirm
+          </Typography>
+          <Paper
+            sx={{
+              padding: "20px",
+            }}
+          >
+            {prUrl == "" ? (
+              <Typography color="text.secondary" paragraph>
+                Generating pull request...
+              </Typography>
+            ) : (
+              <a
+                href={prUrl}
+                style={{
+                  flex: 1,
+                  alignContent: "center",
+                }}
+              >
+                Pull Request Link
+              </a>
+            )}
+          </Paper>
         </Container>
       )}
     </Container>
